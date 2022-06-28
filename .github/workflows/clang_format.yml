@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://json-schema.org/draft-07/schema#
+name: Clang Format
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: DoozyX/clang-format-lint-action@v0.14
+        with:
+          source: "."
+          exclude: "./build"
+          extensions: "h,hpp,c,cc,cpp"
+          clangFormatVersion: 14
