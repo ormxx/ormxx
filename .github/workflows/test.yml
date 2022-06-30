@@ -24,7 +24,7 @@ jobs:
           MYSQL_DATABASE: mysqlclient_unittest
           MYSQL_ROOT_PASSWORD: password
         ports:
-          - 13306:3306
+          - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -50,7 +50,7 @@ jobs:
 
       - name: Unit Test
         run: |
-          source ./unittest.ci.env
+          source ./unittest.example.env
           make unittest
 
       - name: GCOVR Analysis
@@ -87,7 +87,7 @@ jobs:
           MYSQL_DATABASE: mysqlclient_unittest
           MYSQL_ROOT_PASSWORD: password
         ports:
-          - 3306
+          - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -113,5 +113,5 @@ jobs:
 
       - name: Benchmark
         run: |
-          source ./unittest.ci.env
+          source ./unittest.example.env
           make benchmark
