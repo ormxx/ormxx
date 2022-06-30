@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
 
     services:
       mysql:
@@ -24,7 +24,7 @@ jobs:
           MYSQL_DATABASE: mysqlclient_unittest
           MYSQL_ROOT_PASSWORD: password
         ports:
-          - 3306
+          - 13306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -50,7 +50,7 @@ jobs:
 
       - name: Unit Test
         run: |
-          source ./unittest.example.env
+          source ./unittest.ci.env
           make unittest
 
       - name: GCOVR Analysis
@@ -78,7 +78,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
 
     services:
       mysql:
@@ -113,5 +113,5 @@ jobs:
 
       - name: Benchmark
         run: |
-          source ./unittest.example.env
+          source ./unittest.ci.env
           make benchmark
