@@ -4,6 +4,11 @@ cmake_minimum_required(VERSION 3.14)
 
 project(ormxx VERSION 0.0.0)
 
+# libmysqlcppconn-dev
+find_package(mysqlcppconn)
+# libfmt-dev
+find_package(fmt)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -20,7 +25,9 @@ include_directories(
 )
 
 add_library(ormxx INTERFACE)
-target_include_directories(ormxx INTERFACE ${PROJECT_SOURCE_DIR}/include/)
+target_include_directories(ormxx INTERFACE
+    ${PROJECT_SOURCE_DIR}/include/
+)
 
 if(ormxx_build_tests)
     enable_testing()

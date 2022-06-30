@@ -17,6 +17,16 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
 
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: mysqlclient_unittest
+          MYSQL_ROOT_PASSWORD: password
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - name: Checkout codebase
         uses: actions/checkout@v2
@@ -39,6 +49,7 @@ jobs:
 
       - name: Unit Test
         run: |
+          source ./unittest.example.env
           make unittest
 
       - name: GCOVR Analysis
@@ -68,6 +79,16 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
 
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: mysqlclient_unittest
+          MYSQL_ROOT_PASSWORD: password
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - name: Checkout codebase
         uses: actions/checkout@v2
@@ -90,4 +111,5 @@ jobs:
 
       - name: Benchmark
         run: |
+          source ./unittest.example.env
           make benchmark

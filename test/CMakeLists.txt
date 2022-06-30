@@ -33,7 +33,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 
-file(GLOB UNITTEST_FILE "*_test.cc")
+file(GLOB UNITTEST_FILE "*_test.cc" "ormxx/adaptor/mysql/*_test.cc")
 add_executable(
     unit_test
     ${UNITTEST_FILE}
@@ -43,6 +43,8 @@ target_link_libraries(
     unit_test
 PRIVATE
     snapshot
+    fmt::fmt
+    mysqlcppconn
     gtest
     gtest_main
 )
@@ -67,6 +69,9 @@ target_link_libraries(
     unit_benchmark
 PRIVATE
     snapshot
+    gtest
+    fmt::fmt
+    mysqlcppconn
     benchmark::benchmark
     benchmark::benchmark_main
 )

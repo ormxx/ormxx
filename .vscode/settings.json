@@ -27,6 +27,7 @@
         "cmake",
         "codecov",
         "GCOVR",
+        "mysqlclient",
         "ormxx"
     ]
 }

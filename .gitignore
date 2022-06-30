@@ -2,3 +2,5 @@
 
 .coverage
 build
+
+unittest.env
