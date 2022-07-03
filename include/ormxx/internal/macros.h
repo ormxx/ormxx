@@ -9,12 +9,12 @@
 #include "../types_check/has_ormxx_struct_schema_entrance.h"
 #include "./create_entrance_field_options.h"
 
-namespace internal {
+namespace ormxx::internal {
 
 std::string GetOriginStructName(const std::string& origin_struct_name) {
     std::string res = "";
 
-    for (size_t i = origin_struct_name.size() - 1; i >= 0; i--) {
+    for (int i = (int)origin_struct_name.size() - 1; i >= 0; i--) {
         if (origin_struct_name[i] == ':') {
             break;
         }
@@ -22,10 +22,12 @@ std::string GetOriginStructName(const std::string& origin_struct_name) {
         res += origin_struct_name[i];
     }
 
+    std::reverse(res.begin(), res.end());
+
     return res;
 }
 
-}  // namespace internal
+}  // namespace ormxx::internal
 
 #define ORMXX_STR(x) #x
 
@@ -38,9 +40,9 @@ private:                                                                        
     static ::ormxx::TableOptions __ORMXX_GetTableOptions() {                                             \
         static const auto options = std::invoke([]() {                                                   \
             ::ormxx::TableOptions options;                                                               \
-            options.origin_struct_name = GetOriginStructName(ORMXX_STR(Struct));                         \
+            options.origin_struct_name = ::ormxx::internal::GetOriginStructName(ORMXX_STR(Struct));      \
                                                                                                          \
-            ::ormxx::TableOptions::ApplyTableOptions(options, __VA_ARGS__);                              \
+            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__);                            \
         });                                                                                              \
                                                                                                          \
         return options;                                                                                  \
@@ -60,13 +62,13 @@ private:                                                                        
 
 #define ORMXX_STRUCT_SCHEMA_DECLARE_END }
 
-#define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_BEGIN(Struct)                                               \
+#define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                          \
     static ::ormxx::TableOptions __ORMXXExternal_GetTableOptions() {                                     \
         static const auto options = std::invoke([]() {                                                   \
             ::ormxx::TableOptions options;                                                               \
-            options.origin_struct_name = GetOriginStructName(ORMXX_STR(Struct));                         \
+            options.origin_struct_name = ::ormxx::internal::GetOriginStructName(ORMXX_STR(Struct));      \
                                                                                                          \
-            ::ormxx::TableOptions::ApplyTableOptions(options, __VA_ARGS__);                              \
+            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__);                            \
         });                                                                                              \
                                                                                                          \
         return options;                                                                                  \
