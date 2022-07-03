@@ -13,7 +13,7 @@ public:
     template <typename T, typename... Opt>
     auto operator()([[maybe_unused]] T* t, std::string_view field_name, Opt&&... opts) const {
         auto options = SchemaOptionsStruct<std::remove_const_t<T>>{};
-        options.key_name = field_name;
+        options.origin_field_name = field_name;
         SchemaOptions::ApplySchemaOptions(options, std::forward<Opt>(opts)...);
         return options;
     }
@@ -21,7 +21,7 @@ public:
     template <typename T, typename... Opt>
     auto operator()([[maybe_unused]] std::optional<T>* t, std::string_view field_name, Opt&&... opts) const {
         auto options = SchemaOptionsStruct<std::remove_const_t<T>>{};
-        options.key_name = field_name;
+        options.origin_field_name = field_name;
         SchemaOptions::ApplySchemaOptions(options, std::forward<Opt>(opts)...);
         return options;
     }

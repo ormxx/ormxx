@@ -11,6 +11,7 @@ namespace internal {
 
 template <typename T>
 struct SchemaOptionsStruct {
+    std::string origin_field_name{""};
     std::string field_name{""};
     bool required{false};
     std::optional<T> default_value{std::nullopt};
