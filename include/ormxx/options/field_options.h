@@ -1,5 +1,5 @@
-#ifndef ORMXX_INTERNAL_SCHEMA_OPTIONS_H
-#define ORMXX_INTERNAL_SCHEMA_OPTIONS_H
+#ifndef ORMXX_INTERNAL_FIELD_OPTIONS_H
+#define ORMXX_INTERNAL_FIELD_OPTIONS_H
 
 #include <optional>
 #include <string>
@@ -9,9 +9,11 @@ namespace ormxx {
 
 namespace internal {
 
-template <typename T>
-struct SchemaOptionsStruct {
+template <typename T, typename F>
+struct FieldOptionsStruct {
     std::string origin_field_name{""};
+    F field_type;
+
     std::string field_name{""};
     bool required{false};
     std::optional<T> default_value{std::nullopt};
@@ -19,7 +21,7 @@ struct SchemaOptionsStruct {
 
 }  // namespace internal
 
-class SchemaOptions {
+class FieldOptions {
 public:
     static auto WithFieldName(const std::string& field_name) {
         return [field_name](auto& options) {
@@ -40,19 +42,19 @@ public:
         };
     }
 
-    template <typename T, typename... Opt>
-    static auto ApplySchemaOptions(internal::SchemaOptionsStruct<T>& options, Opt&&... opts) {
+    template <typename T, typename F, typename... Opt>
+    static auto ApplyFieldOptions(internal::FieldOptionsStruct<T, F>& options, Opt&&... opts) {
         (std::forward<Opt>(opts)(options), ...);
         return options;
     }
 
-    template <typename T, typename... Opt>
-    static auto CreateSchemaOptions(Opt&&... opts) {
-        internal::SchemaOptionsStruct<T> options;
+    template <typename T, typename F, typename... Opt>
+    static auto CreateFieldOptions(Opt&&... opts) {
+        internal::FieldOptionsStruct<T, F> options;
         return ApplySchemaOptions(options, std::forward<Opt>(opts)...);
     }
 };
 
 }  // namespace ormxx
 
-#endif  // ORMXX_INTERNAL_SCHEMA_OPTIONS_H
+#endif  // ORMXX_INTERNAL_FIELD_OPTIONS_H
