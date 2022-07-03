@@ -57,14 +57,14 @@ TEST_F(MySQLClientTest, mysqlclient_test) {
         auto res = helper.Execute(fmt::format(R"(
 CREATE TABLE {}  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'incr id',
-  `main_call_uuid` varchar(64) NOT NULL COMMENT 'main call uuid',
+  `main_uuid` varchar(64) NOT NULL COMMENT 'main uuid',
   `event_body` MEDIUMTEXT NOT NULL COMMENT 'event body',
   `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'update time',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `idx_created_time` (`created_time`),
   INDEX `idx_update_time` (`update_time`),
-  INDEX `uniq_call_uuid` (`main_call_uuid`) USING BTREE
+  INDEX `uniq_main_uuid` (`main_uuid`) USING BTREE
 ) ENGINE = InnoDB  CHARACTER SET = utf8mb4  COMMENT = 'mysqlclient test table';
 )",
                 kTableName));
@@ -73,7 +73,7 @@ CREATE TABLE {}  (
 
     {
         auto res = helper.ExecuteUpdate(fmt::format(R"(
-INSERT INTO {} (`main_call_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_1', '1');
+INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_1', '1');
         )",
                 kTableName));
         EXPECT_TRUE(res.HasResult());
@@ -82,7 +82,7 @@ INSERT INTO {} (`main_call_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25
 
     {
         auto res = helper.ExecuteUpdate(fmt::format(R"(
-INSERT INTO {} (`main_call_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_2', '2');
+INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_2', '2');
         )",
                 kTableName));
         EXPECT_TRUE(res.HasResult());
@@ -91,7 +91,7 @@ INSERT INTO {} (`main_call_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25
 
     {
         auto res = helper.ExecuteUpdate(fmt::format(R"(
-INSERT INTO {} (`main_call_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_3', '3');
+INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_3', '3');
         )",
                 kTableName));
         EXPECT_TRUE(res.HasResult());
@@ -108,12 +108,12 @@ SELECT * FROM {};
 
         for (int i = 0; i < res.UpdatedRows(); i++) {
             res.Next();
-            std::string main_call_uuid = "";
+            std::string main_uuid = "";
             std::string event_body = "";
-            res.AssignColumnToVar(main_call_uuid, "main_call_uuid");
+            res.AssignColumnToVar(main_uuid, "main_uuid");
             res.AssignColumnToVar(event_body, "event_body");
 
-            EXPECT_EQ(main_call_uuid, fmt::format("176BED2B-1AB3-47C1-AF25-FA29313A5FF_{}", i + 1));
+            EXPECT_EQ(main_uuid, fmt::format("176BED2B-1AB3-47C1-AF25-FA29313A5FF_{}", i + 1));
             EXPECT_EQ(event_body, fmt::format("{}", i + 1));
         }
     }
