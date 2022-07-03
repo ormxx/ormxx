@@ -26,6 +26,7 @@
     "cSpell.words": [
         "cmake",
         "codecov",
+        "declval",
         "GCOVR",
         "mysqlclient",
         "ormxx"
