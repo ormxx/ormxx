@@ -15,6 +15,7 @@ struct FieldOptionsStruct {
     F field_type;
 
     std::string field_name{""};
+    std::string comment{""};
     bool required{false};
     std::optional<T> default_value{std::nullopt};
 };
@@ -26,6 +27,12 @@ public:
     static auto WithFieldName(const std::string& field_name) {
         return [field_name](auto& options) {
             options.field_name = field_name;
+        };
+    }
+
+    static auto WithComment(const std::string& comment) {
+        return [comment](auto& options) {
+            options.comment = comment;
         };
     }
 
