@@ -9,48 +9,28 @@
 #include "../types_check/has_ormxx_struct_schema_entrance.h"
 #include "./create_entrance_field_options.h"
 
-namespace ormxx::internal {
-
-std::string GetOriginStructName(const std::string& origin_struct_name) {
-    std::string res = "";
-
-    for (int i = (int)origin_struct_name.size() - 1; i >= 0; i--) {
-        if (origin_struct_name[i] == ':') {
-            break;
-        }
-
-        res += origin_struct_name[i];
-    }
-
-    std::reverse(res.begin(), res.end());
-
-    return res;
-}
-
-}  // namespace ormxx::internal
-
 #define ORMXX_STR(x) #x
 
-#define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                                   \
-private:                                                                                                 \
-    friend class ::ormxx::has_ormxx_struct_schema_entrance<Struct>;                                      \
-    friend class ::ormxx::has_ormxx_struct_schema_entrance<const Struct>;                                \
-    friend class ::ormxx::internal::StructInjectEntranceClass;                                           \
-                                                                                                         \
-    static ::ormxx::TableOptions __ORMXX_GetTableOptions() {                                             \
-        static const auto options = std::invoke([]() {                                                   \
-            ::ormxx::TableOptions options;                                                               \
-            options.origin_struct_name = ::ormxx::internal::GetOriginStructName(ORMXX_STR(Struct));      \
-                                                                                                         \
-            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__);                            \
-        });                                                                                              \
-                                                                                                         \
-        return options;                                                                                  \
-    }                                                                                                    \
-                                                                                                         \
-    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true, \
-            typename Func>                                                                               \
-    static void __ORMXX_StructSchemaEntrance(T* s, Func&& func) {                                        \
+#define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                                     \
+private:                                                                                                   \
+    friend class ::ormxx::has_ormxx_struct_schema_entrance<Struct>;                                        \
+    friend class ::ormxx::has_ormxx_struct_schema_entrance<const Struct>;                                  \
+    friend class ::ormxx::internal::StructInjectEntranceClass;                                             \
+                                                                                                           \
+    static ::ormxx::TableOptions __ORMXX_GetTableOptions() {                                               \
+        static const auto options = std::invoke([]() {                                                     \
+            ::ormxx::TableOptions options;                                                                 \
+            options.origin_struct_name = ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct)); \
+                                                                                                           \
+            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__);                              \
+        });                                                                                                \
+                                                                                                           \
+        return options;                                                                                    \
+    }                                                                                                      \
+                                                                                                           \
+    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,   \
+            typename Func>                                                                                 \
+    static void __ORMXX_StructSchemaEntrance(T* s, Func&& func) {                                          \
         using _Struct = Struct;
 
 #define ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(field, ...)                             \
@@ -62,21 +42,21 @@ private:                                                                        
 
 #define ORMXX_STRUCT_SCHEMA_DECLARE_END }
 
-#define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                          \
-    static ::ormxx::TableOptions __ORMXXExternal_GetTableOptions() {                                     \
-        static const auto options = std::invoke([]() {                                                   \
-            ::ormxx::TableOptions options;                                                               \
-            options.origin_struct_name = ::ormxx::internal::GetOriginStructName(ORMXX_STR(Struct));      \
-                                                                                                         \
-            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__);                            \
-        });                                                                                              \
-                                                                                                         \
-        return options;                                                                                  \
-    }                                                                                                    \
-                                                                                                         \
-    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true, \
-            typename Func>                                                                               \
-    static auto __ORMXXExternal_StructSchemaEntrance(T* s, Func&& func) {                                \
+#define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                            \
+    static ::ormxx::TableOptions __ORMXXExternal_GetTableOptions() {                                       \
+        static const auto options = std::invoke([]() {                                                     \
+            ::ormxx::TableOptions options;                                                                 \
+            options.origin_struct_name = ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct)); \
+                                                                                                           \
+            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__);                              \
+        });                                                                                                \
+                                                                                                           \
+        return options;                                                                                    \
+    }                                                                                                      \
+                                                                                                           \
+    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,   \
+            typename Func>                                                                                 \
+    static auto __ORMXXExternal_StructSchemaEntrance(T* s, Func&& func) {                                  \
         using _Struct = Struct;
 
 #define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_FIELD(field, ...) ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(field, ##__VA_ARGS__)
