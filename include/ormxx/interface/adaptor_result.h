@@ -1,5 +1,5 @@
-#ifndef ORMXX_INTERFACE_RESULT_H
-#define ORMXX_INTERFACE_RESULT_H
+#ifndef ORMXX_INTERFACE_ADAPTOR_RESULT_H
+#define ORMXX_INTERFACE_ADAPTOR_RESULT_H
 
 #include <string>
 
@@ -44,4 +44,4 @@ public:
 
 }  // namespace ormxx
 
-#endif  // ORMXX_INTERFACE_RESULT_H
+#endif  // ORMXX_INTERFACE_ADAPTOR_RESULT_H
