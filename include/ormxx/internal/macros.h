@@ -43,7 +43,8 @@ private:                                                                        
 #define ORMXX_STRUCT_SCHEMA_DECLARE_END }
 
 #define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                            \
-    static ::ormxx::TableOptions __ORMXXExternal_GetTableOptions() {                                       \
+    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true>   \
+    static ::ormxx::TableOptions __ORMXXExternal_GetTableOptions([[maybe_unused]] T* s) {                  \
         static const auto options = std::invoke([]() {                                                     \
             ::ormxx::TableOptions options;                                                                 \
             options.origin_struct_name = ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct)); \
