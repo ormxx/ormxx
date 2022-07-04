@@ -3,22 +3,19 @@
 
 #include "fmt/core.h"
 
-#include "ormxx/adaptor/mysql/mysql_connection_config.h"
-#include "ormxx/adaptor/mysql/mysql_connection_pool.h"
-#include "ormxx/adaptor/mysql/mysql_helper.h"
-#include "ormxx/adaptor/mysql/mysql_result.h"
+#include "ormxx/adaptor/mysql/mysql_adaptor.h"
+#include "ormxx/ormxx.h"
 
+using namespace ormxx;
 using namespace ormxx::adaptor::mysql;
 
-std::unique_ptr<MySQLConnectionPool> connection_pool = nullptr;
+ORMXX* orm = nullptr;
 
 constexpr std::string_view kTableName = "mysqlclient_unittest_table_FE041CA5_D3C1_4758_83A3_28550E3AB66B";
 
 class MySQLClientTest : public testing::Test {
 protected:
     virtual void SetUp() override {
-        connection_pool.reset(MySQLConnectionPool::Builder().BuildPtr());
-
         auto* hostname = std::getenv("MYSQL_HOSTNAME");
         auto* port = std::getenv("MYSQL_PORT");
         auto* username = std::getenv("MYSQL_USERNAME");
@@ -30,7 +27,7 @@ protected:
         ASSERT_NE(password, nullptr);
         ASSERT_NE(schema, nullptr);
 
-        auto config = MySQLConnectionConfig::Builder()
+        auto config = MySQLConfig::Builder()
                               .WithHostname(hostname)
                               .WithPort(port ? std::stoi(port) : 3306)
                               .WithUsername(username)
@@ -38,23 +35,26 @@ protected:
                               .WithSchema(schema)
                               .Build();
 
-        connection_pool->AddConfig(config);
+        auto* mysql_adaptor = new MySQLAdaptor();
+        mysql_adaptor->AddWriteConfig(config);
+
+        orm = ORMXX::Builder(dynamic_cast<Adaptor*>(mysql_adaptor)).WithMaxIdleConnection(0).BuildPtr();
     }
 
-    virtual void TearDown() override {}
+    virtual void TearDown() override {
+        delete orm;
+    }
 };
 
 TEST_F(MySQLClientTest, mysqlclient_test) {
-    auto helper = connection_pool->GetConnectionHelper();
-    EXPECT_NE(helper.GetConnection(), nullptr);
-
     {
-        auto res = helper.Execute(fmt::format("DROP TABLE IF EXISTS `{}`;", kTableName));
-        EXPECT_TRUE(res.HasResult());
+        auto res = orm->Execute(fmt::format("DROP TABLE IF EXISTS `{}`;", kTableName));
+        EXPECT_TRUE(res.IsOK());
+        auto execute_res = std::move(res.Value());
     }
 
     {
-        auto res = helper.Execute(fmt::format(R"(
+        auto res = orm->Execute(fmt::format(R"(
 CREATE TABLE {}  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'incr id',
   `main_uuid` varchar(64) NOT NULL COMMENT 'main uuid',
@@ -68,50 +68,55 @@ CREATE TABLE {}  (
 ) ENGINE = InnoDB  CHARACTER SET = utf8mb4  COMMENT = 'mysqlclient test table';
 )",
                 kTableName));
-        EXPECT_TRUE(res.HasResult());
+        EXPECT_TRUE(res.IsOK());
     }
 
     {
-        auto res = helper.ExecuteUpdate(fmt::format(R"(
+        auto res = orm->ExecuteUpdate(fmt::format(R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_1', '1');
         )",
                 kTableName));
-        EXPECT_TRUE(res.HasResult());
-        EXPECT_EQ(res.UpdatedRows(), 1);
+        EXPECT_TRUE(res.IsOK());
+        auto execute_res = std::move(res.Value());
+        EXPECT_EQ(execute_res->RowsAffected(), 1);
     }
 
     {
-        auto res = helper.ExecuteUpdate(fmt::format(R"(
+        auto res = orm->ExecuteUpdate(fmt::format(R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_2', '2');
         )",
                 kTableName));
-        EXPECT_TRUE(res.HasResult());
-        EXPECT_EQ(res.UpdatedRows(), 1);
+        EXPECT_TRUE(res.IsOK());
+        auto execute_res = std::move(res.Value());
+        EXPECT_EQ(execute_res->RowsAffected(), 1);
     }
 
     {
-        auto res = helper.ExecuteUpdate(fmt::format(R"(
+        auto res = orm->ExecuteUpdate(fmt::format(R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_3', '3');
         )",
                 kTableName));
-        EXPECT_TRUE(res.HasResult());
-        EXPECT_EQ(res.UpdatedRows(), 1);
+        EXPECT_TRUE(res.IsOK());
+        auto execute_res = std::move(res.Value());
+        EXPECT_EQ(execute_res->RowsAffected(), 1);
     }
 
     {
-        auto res = helper.ExecuteQuery(fmt::format(R"(
-SELECT * FROM {};
-        )",
+        auto res = orm->ExecuteQuery(fmt::format(R"(
+    SELECT * FROM {};
+            )",
                 kTableName));
-        EXPECT_TRUE(res.HasResult());
-        EXPECT_EQ(res.RowsCount(), 3);
+        EXPECT_TRUE(res.IsOK());
+        auto execute_res = std::move(res.Value());
+        EXPECT_EQ(execute_res->RowsCount(), 3);
 
-        for (int i = 0; i < res.UpdatedRows(); i++) {
-            res.Next();
+        for (int i = 0; i < execute_res->RowsAffected(); i++) {
+            execute_res->Next();
+
             std::string main_uuid = "";
             std::string event_body = "";
-            res.AssignColumnToVar(main_uuid, "main_uuid");
-            res.AssignColumnToVar(event_body, "event_body");
+            execute_res->AssignColumn(main_uuid, "main_uuid");
+            execute_res->AssignColumn(event_body, "event_body");
 
             EXPECT_EQ(main_uuid, fmt::format("176BED2B-1AB3-47C1-AF25-FA29313A5FF_{}", i + 1));
             EXPECT_EQ(event_body, fmt::format("{}", i + 1));
@@ -119,17 +124,18 @@ SELECT * FROM {};
     }
 
     {
-        auto res = helper.ExecuteUpdate(fmt::format(R"(
+        auto res = orm->ExecuteUpdate(fmt::format(R"(
 UPDATE {}
 SET `event_body` = '4';
         )",
                 kTableName));
-        EXPECT_TRUE(res.HasResult());
-        EXPECT_EQ(res.UpdatedRows(), 3);
+        EXPECT_TRUE(res.IsOK());
+        auto execute_res = std::move(res.Value());
+        EXPECT_EQ(execute_res->RowsAffected(), 3);
     }
 
     {
-        auto res = helper.Execute(fmt::format("DROP TABLE IF EXISTS `{}`;", kTableName));
-        EXPECT_TRUE(res.HasResult());
+        auto res = orm->Execute(fmt::format("DROP TABLE IF EXISTS `{}`;", kTableName));
+        EXPECT_TRUE(res.IsOK());
     }
 }

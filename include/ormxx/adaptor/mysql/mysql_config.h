@@ -1,5 +1,5 @@
-#ifndef ORMXX_ADAPTOR_MYSQL_MYSQL_CONNECTION_CONFIG_H
-#define ORMXX_ADAPTOR_MYSQL_MYSQL_CONNECTION_CONFIG_H
+#ifndef ORMXX_ADAPTOR_MYSQL_MYSQL_CONFIG_H
+#define ORMXX_ADAPTOR_MYSQL_MYSQL_CONFIG_H
 
 #include <cstdint>
 #include <string>
@@ -8,7 +8,7 @@
 
 namespace ormxx::adaptor::mysql {
 
-class MySQLConnectionConfig {
+class MySQLConfig {
 public:
     struct Options {
         std::string hostname;
@@ -18,9 +18,10 @@ public:
         std::string schema;
 
         bool re_connect{true};
-        int connect_timeout{5};
-        int read_timeout{5};
-        int write_timeout{5};
+        // seconds
+        int connect_timeout{16};
+        int read_timeout{16};
+        int write_timeout{16};
     };
 
     class Builder {
@@ -70,12 +71,12 @@ public:
             return *this;
         }
 
-        MySQLConnectionConfig Build() {
-            return MySQLConnectionConfig(options_);
+        MySQLConfig Build() {
+            return MySQLConfig(options_);
         }
 
-        MySQLConnectionConfig* BuildPtr() {
-            return new MySQLConnectionConfig(options_);
+        MySQLConfig* BuildPtr() {
+            return new MySQLConfig(options_);
         }
 
     private:
@@ -83,13 +84,13 @@ public:
     };
 
 public:
-    MySQLConnectionConfig() = delete;
+    MySQLConfig() = delete;
 
-    MySQLConnectionConfig(const Options& options) : options_(options) {
+    MySQLConfig(const Options& options) : options_(options) {
         init();
     }
 
-    ~MySQLConnectionConfig() {}
+    ~MySQLConfig() {}
 
     sql::ConnectOptionsMap GetConnectOptionsMap() const {
         return connect_options_map_;
@@ -131,4 +132,4 @@ private:
 
 }  // namespace ormxx::adaptor::mysql
 
-#endif  // ORMXX_ADAPTOR_MYSQL_MYSQL_CONNECTION_CONFIG_H
+#endif  // ORMXX_ADAPTOR_MYSQL_MYSQL_CONFIG_H

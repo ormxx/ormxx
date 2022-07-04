@@ -8,12 +8,16 @@ namespace ormxx {
 
 enum class ErrorCode {
     OK = 0,
+    ConnectionError,
+    ExecuteError,
     OtherError,
 };
 
 inline auto ErrorCodeToStr(ErrorCode error_code) {
     static const std::map<ErrorCode, std::string> ErrorCodeToStrMap = {
             {ErrorCode::OK, "OK"},
+            {ErrorCode::ConnectionError, "ConnectionError"},
+            {ErrorCode::ExecuteError, "ExecuteError"},
             {ErrorCode::OtherError, "OtherError"},
     };
 

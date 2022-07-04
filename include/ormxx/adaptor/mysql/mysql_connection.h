@@ -1,0 +1,134 @@
+#ifndef ORMXX_ADAPTOR_MYSQL_MYSQL_CONNECTION_H
+#define ORMXX_ADAPTOR_MYSQL_MYSQL_CONNECTION_H
+
+#include <cstddef>
+#include <functional>
+#include <memory>
+
+#include "cppconn/connection.h"
+#include "cppconn/prepared_statement.h"
+#include "fmt/core.h"
+
+#include "../../interface/connection.h"
+#include "../../interface/execute_result.h"
+
+#include "./mysql_result.h"
+
+namespace ormxx::adaptor::mysql {
+
+class MySQLConnection : public Connection {
+public:
+    MySQLConnection() = delete;
+    MySQLConnection(sql::Connection* connection) : connection_(connection) {}
+
+    ~MySQLConnection() override {
+        Close();
+    }
+
+    MySQLConnection& SetSchema(const std::string& schema) {
+        schema_ = schema;
+        return *this;
+    }
+
+    sql::Connection* GetConnection() {
+        return connection_;
+    }
+
+    bool ReConnect() override {
+        if (connection_) {
+            try {
+                return connection_->reconnect();
+            } catch (...) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    void Close() override {
+        if (connection_) {
+            connection_->close();
+
+            delete connection_;
+            connection_ = nullptr;
+        }
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql, const std::string& schema) {
+        try {
+            if (!schema.empty()) {
+                connection_->setSchema(schema);
+            }
+
+            std::unique_ptr<sql::PreparedStatement> statement(connection_->prepareStatement(sql));
+            bool execute_success = statement->execute();
+
+            auto res = std::unique_ptr<ExecuteResult>(nullptr);
+            res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(execute_success)));
+            return res;
+        } catch (std::exception& e) {
+            return Result::Builder(Result::ErrorCode::ExecuteError)
+                    .WithErrorMessage(fmt::format("MySQL Execute failed. [err={}, sql={}]", e.what(), sql))
+                    .Build();
+        }
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) override {
+        return Execute(sql, schema_);
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql, const std::string& schema) {
+        try {
+            if (!schema.empty()) {
+                connection_->setSchema(schema);
+            }
+
+            std::unique_ptr<sql::PreparedStatement> statement(connection_->prepareStatement(sql));
+            auto* result_set = statement->executeQuery();
+
+            auto res = std::unique_ptr<ExecuteResult>(nullptr);
+            res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(result_set)));
+            return res;
+        } catch (std::exception& e) {
+            return Result::Builder(Result::ErrorCode::ExecuteError)
+                    .WithErrorMessage(fmt::format("MySQL ExecuteQuery failed. [err={}, sql={}]", e.what(), sql))
+                    .Build();
+        }
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) override {
+        return ExecuteQuery(sql, schema_);
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql, const std::string& schema) {
+        try {
+            if (!schema.empty()) {
+                connection_->setSchema(schema);
+            }
+
+            std::unique_ptr<sql::PreparedStatement> statement(connection_->prepareStatement(sql));
+            int rows_affected = statement->executeUpdate();
+
+            auto res = std::unique_ptr<ExecuteResult>(nullptr);
+            res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(rows_affected)));
+            return res;
+        } catch (std::exception& e) {
+            return Result::Builder(Result::ErrorCode::ExecuteError)
+                    .WithErrorMessage(fmt::format("MySQL ExecuteUpdate failed. [err={}, sql={}]", e.what(), sql))
+                    .Build();
+        }
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) override {
+        return ExecuteUpdate(sql, schema_);
+    }
+
+private:
+    std::string schema_{""};
+    sql::Connection* connection_{nullptr};
+};
+
+}  // namespace ormxx::adaptor::mysql
+
+#endif  // ORMXX_ADAPTOR_MYSQL_MYSQL_CONNECTION_H

@@ -6,23 +6,21 @@
 
 #include "cppconn/resultset.h"
 
-#include "../../interface/adaptor_result.h"
+#include "../../interface/execute_result.h"
 
 namespace ormxx::adaptor::mysql {
 
-class MySQLResult : public AdaptorResult {
+class MySQLResult : public ExecuteResult {
 public:
     MySQLResult() = delete;
 
-    MySQLResult(bool execute_success) : has_result_(true), execute_success_(execute_success) {}
+    MySQLResult(bool execute_success) : execute_success_(execute_success) {}
 
-    MySQLResult(int updated_rows) : has_result_(true), updated_rows_(updated_rows) {}
+    MySQLResult(int rows_affected) : rows_affected_(rows_affected) {}
 
-    MySQLResult(sql::ResultSet* result_set) : has_result_(true), result_set_(result_set) {}
+    MySQLResult(sql::ResultSet* result_set) : result_set_(result_set) {}
 
-    MySQLResult(const std::string& error_message) : error_message_(error_message) {}
-
-    ~MySQLResult() {
+    ~MySQLResult() override {
         if (result_set_) {
             delete result_set_;
         }
@@ -39,28 +37,20 @@ public:
         move(std::move(other));
     }
 
-    bool HasResult() const override {
-        return has_result_;
-    }
-
     bool ExecuteSuccess() const override {
         return execute_success_;
     }
 
-    int UpdatedRows() const override {
-        return updated_rows_;
+    int RowsAffected() const override {
+        return rows_affected_;
+    }
+
+    size_t RowsCount() const override {
+        return result_set_->rowsCount();
     }
 
     sql::ResultSet* GetResultSet() {
         return result_set_;
-    }
-
-    std::string ErrorMessage() const override {
-        return error_message_;
-    }
-
-    size_t RowsCount() const {
-        return result_set_->rowsCount();
     }
 
     bool Next() override {
@@ -83,12 +73,28 @@ public:
         return result_set_->getBoolean(column_label);
     }
 
+    void AssignColumn(bool& column, uint32_t column_index) const override {
+        column = GetBoolean(column_index);
+    }
+
+    void AssignColumn(bool& column, const std::string& column_label) const override {
+        column = GetBoolean(column_label);
+    }
+
     int32_t GetInt(uint32_t column_index) const override {
         return result_set_->getInt(column_index);
     }
 
     int32_t GetInt(const std::string& column_label) const override {
         return result_set_->getInt(column_label);
+    }
+
+    void AssignColumn(int32_t& column, uint32_t column_index) const override {
+        column = GetInt(column_index);
+    }
+
+    void AssignColumn(int32_t& column, const std::string& column_label) const override {
+        column = GetInt(column_label);
     }
 
     uint32_t GetUInt(uint32_t column_index) const override {
@@ -99,12 +105,28 @@ public:
         return result_set_->getUInt(column_label);
     }
 
+    void AssignColumn(uint32_t& column, uint32_t column_index) const override {
+        column = GetUInt(column_index);
+    }
+
+    void AssignColumn(uint32_t& column, const std::string& column_label) const override {
+        column = GetUInt(column_label);
+    }
+
     int64_t GetInt64(uint32_t column_index) const override {
         return result_set_->getInt64(column_index);
     }
 
     int64_t GetInt64(const std::string& column_label) const override {
         return result_set_->getInt64(column_label);
+    }
+
+    void AssignColumn(int64_t& column, uint32_t column_index) const override {
+        column = GetInt64(column_index);
+    }
+
+    void AssignColumn(int64_t& column, const std::string& column_label) const override {
+        column = GetInt64(column_label);
     }
 
     uint64_t GetUInt64(uint32_t column_index) const override {
@@ -115,12 +137,28 @@ public:
         return result_set_->getUInt64(column_label);
     }
 
+    void AssignColumn(uint64_t& column, uint32_t column_index) const override {
+        column = GetUInt64(column_index);
+    }
+
+    void AssignColumn(uint64_t& column, const std::string& column_label) const override {
+        column = GetUInt64(column_label);
+    }
+
     long double GetDouble(uint32_t column_index) const override {
         return result_set_->getDouble(column_index);
     }
 
     long double GetDouble(const std::string& column_label) const override {
         return result_set_->getDouble(column_label);
+    }
+
+    void AssignColumn(long double& column, uint32_t column_index) const override {
+        column = GetDouble(column_index);
+    }
+
+    void AssignColumn(long double& column, const std::string& column_label) const override {
+        column = GetDouble(column_label);
     }
 
     std::string GetString(uint32_t column_index) const override {
@@ -131,95 +169,27 @@ public:
         return result_set_->getString(column_label);
     }
 
-    template <typename T>
-    T GetColumn(uint32_t column_index) const {
-        if constexpr (std::is_same_v<bool, T>) {
-            return result_set_->getBoolean(column_index);
-        }
-
-        if constexpr (std::is_same_v<int32_t, T>) {
-            return result_set_->getInt(column_index);
-        }
-
-        if constexpr (std::is_same_v<uint32_t, T>) {
-            return result_set_->getUInt(column_index);
-        }
-
-        if constexpr (std::is_same_v<int64_t, T>) {
-            return result_set_->getInt64(column_index);
-        }
-
-        if constexpr (std::is_same_v<uint64_t, T>) {
-            return result_set_->getUInt64(column_index);
-        }
-
-        if constexpr (std::is_same_v<long double, T>) {
-            return result_set_->getDouble(column_index);
-        }
-
-        if constexpr (std::is_same_v<std::string, T>) {
-            return result_set_->getString(column_index);
-        }
+    void AssignColumn(std::string& column, uint32_t column_index) const override {
+        column = GetString(column_index);
     }
 
-    template <typename T>
-    T GetColumn(const std::string& column_label) const {
-        if constexpr (std::is_same_v<bool, T>) {
-            return result_set_->getBoolean(column_label);
-        }
-
-        if constexpr (std::is_same_v<int32_t, T>) {
-            return result_set_->getInt(column_label);
-        }
-
-        if constexpr (std::is_same_v<uint32_t, T>) {
-            return result_set_->getUInt(column_label);
-        }
-
-        if constexpr (std::is_same_v<int64_t, T>) {
-            return result_set_->getInt64(column_label);
-        }
-
-        if constexpr (std::is_same_v<uint64_t, T>) {
-            return result_set_->getUInt64(column_label);
-        }
-
-        if constexpr (std::is_same_v<long double, T>) {
-            return result_set_->getDouble(column_label);
-        }
-
-        if constexpr (std::is_same_v<std::string, T>) {
-            return result_set_->getString(column_label);
-        }
-    }
-
-    template <typename T>
-    void AssignColumnToVar(T& column, uint32_t column_index) const {
-        column = GetColumn<T>(column_index);
-    }
-
-    template <typename T>
-    void AssignColumnToVar(T& column, const std::string& column_label) const {
-        column = GetColumn<T>(column_label);
+    void AssignColumn(std::string& column, const std::string& column_label) const override {
+        column = GetString(column_label);
     }
 
 private:
     void move(MySQLResult&& other) {
-        has_result_ = other.has_result_;
         execute_success_ = other.execute_success_;
-        updated_rows_ = other.updated_rows_;
+        rows_affected_ = other.rows_affected_;
         result_set_ = other.result_set_;
-        error_message_ = other.error_message_;
 
         other.result_set_ = nullptr;
     }
 
 private:
-    bool has_result_{false};
     bool execute_success_{false};
-    int updated_rows_{0};
+    int rows_affected_{0};
     sql::ResultSet* result_set_{nullptr};
-    std::string error_message_;
 };
 
 }  // namespace ormxx::adaptor::mysql
