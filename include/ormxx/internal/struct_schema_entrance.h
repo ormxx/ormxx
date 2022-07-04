@@ -1,5 +1,5 @@
-#ifndef ORMXX_INTERNAL_STRUCT_INJECT_ENTRANCE_H
-#define ORMXX_INTERNAL_STRUCT_INJECT_ENTRANCE_H
+#ifndef ORMXX_INTERNAL_STRUCT_SCHEMA_ENTRANCE_H
+#define ORMXX_INTERNAL_STRUCT_SCHEMA_ENTRANCE_H
 
 #include "../types_check/common.h"
 #include "../types_check/has_ormxx_external_struct_schema_entrance.h"
@@ -7,7 +7,7 @@
 
 namespace ormxx::internal {
 
-class StructInjectEntranceClass {
+class StructSchemaEntranceClass {
 public:
     template <typename T, typename Func>
     void operator()(T* t, Func&& func) const {
@@ -22,8 +22,8 @@ public:
     }
 };
 
-static const auto StructInjectEntrance = StructInjectEntranceClass();
+static const auto StructSchemaEntrance = StructSchemaEntranceClass();
 
 }  // namespace ormxx::internal
 
-#endif  // ORMXX_INTERNAL_STRUCT_INJECT_ENTRANCE_H
+#endif  // ORMXX_INTERNAL_STRUCT_SCHEMA_ENTRANCE_H
