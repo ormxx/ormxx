@@ -37,14 +37,14 @@ struct User {
     )
 
     ORMXX_STRUCT_SCHEMA_DECLARE_KEY(
+        KeyOptions::FieldName({"ID"}),
         KeyOptions::KeyType(KeyOptions::KeyType::PRIMARY),
-        KeyOptions::EngineType(KeyOptions::EngineType::BTREE),
-        KeyOptions::FieldName({"ID"})
+        KeyOptions::EngineType(KeyOptions::EngineType::BTREE)
     )
     ORMXX_STRUCT_SCHEMA_DECLARE_KEY(
+        KeyOptions::FieldName({"Name", "Age"}),
         KeyOptions::KeyType(KeyOptions::KeyType::INDEX),
-        KeyOptions::EngineType(KeyOptions::EngineType::BTREE),
-        KeyOptions::FieldName({"Name", "Age"})
+        KeyOptions::EngineType(KeyOptions::EngineType::BTREE)
     )
     ORMXX_STRUCT_SCHEMA_DECLARE_END(
         TableOptions::OptionsRawSQLString("ENGINE = InnoDB CHARACTER SET = utf8mb4"),
