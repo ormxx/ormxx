@@ -9,6 +9,7 @@
 #include "./interface/adaptor.h"
 #include "./interface/connection.h"
 #include "./interface/result.h"
+#include "./sql/generate_drop_table_sql.h"
 
 namespace ormxx {
 
@@ -108,6 +109,12 @@ public:
         releaseWriteConnection(conn);
 
         return res;
+    }
+
+    template <typename T>
+    Result DropTable() {
+        auto sql = GenerateDropTableSQL<T>(nullptr);
+        return Execute(sql.Value());
     }
 
 private:

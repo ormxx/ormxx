@@ -3,13 +3,16 @@
 
 #include <type_traits>
 
+#include "../options/table_options.h"
+
 namespace ormxx {
 
 template <typename T>
 class has_ormxx_get_table_options {
 private:
     template <typename U>
-    static constexpr auto check(int) -> decltype(U::__ORMXX_GetTableOptions(), std::true_type());
+    static constexpr auto check(int) ->
+            typename std::is_same<decltype(U::__ORMXX_GetTableOptions()), ::ormxx::TableOptions>::type;
 
     template <typename>
     static constexpr std::false_type check(...);

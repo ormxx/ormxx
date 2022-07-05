@@ -6,47 +6,24 @@
 #include "ormxx/adaptor/mysql/mysql_adaptor.h"
 #include "ormxx/ormxx.h"
 
-using namespace ormxx;
-using namespace ormxx::adaptor::mysql;
+#include "../../get_orm.h"
 
-ORMXX* orm = nullptr;
+using namespace ormxx;
+using namespace ormxx::test;
+using namespace ormxx::adaptor::mysql;
 
 constexpr std::string_view kTableName = "mysqlclient_unittest_table_FE041CA5_D3C1_4758_83A3_28550E3AB66B";
 
 class MySQLClientTest : public testing::Test {
 protected:
-    virtual void SetUp() override {
-        auto* hostname = std::getenv("MYSQL_HOSTNAME");
-        auto* port = std::getenv("MYSQL_PORT");
-        auto* username = std::getenv("MYSQL_USERNAME");
-        auto* password = std::getenv("MYSQL_PASSWORD");
-        auto* schema = std::getenv("MYSQL_SCHEMA");
+    virtual void SetUp() override {}
 
-        ASSERT_NE(hostname, nullptr);
-        ASSERT_NE(username, nullptr);
-        ASSERT_NE(password, nullptr);
-        ASSERT_NE(schema, nullptr);
-
-        auto config = MySQLConfig::Builder()
-                              .WithHostname(hostname)
-                              .WithPort(port ? std::stoi(port) : 3306)
-                              .WithUsername(username)
-                              .WithPassword(password)
-                              .WithSchema(schema)
-                              .Build();
-
-        auto* mysql_adaptor = new MySQLAdaptor();
-        mysql_adaptor->AddWriteConfig(config);
-
-        orm = ORMXX::Builder(dynamic_cast<Adaptor*>(mysql_adaptor)).WithMaxIdleConnection(0).BuildPtr();
-    }
-
-    virtual void TearDown() override {
-        delete orm;
-    }
+    virtual void TearDown() override {}
 };
 
 TEST_F(MySQLClientTest, mysqlclient_test) {
+    auto* orm = GetORMXX();
+
     {
         auto res = orm->Execute(fmt::format("DROP TABLE IF EXISTS `{}`;", kTableName));
         EXPECT_TRUE(res.IsOK());
