@@ -3,7 +3,7 @@
 
 #include <type_traits>
 
-namespace ormxx {
+namespace ormxx::internal {
 
 template <typename T>
 class has_ormxx_external_struct_schema_entrance {
@@ -24,6 +24,6 @@ public:
 template <typename T>
 inline constexpr bool has_ormxx_external_struct_schema_entrance_v = has_ormxx_external_struct_schema_entrance<T>::value;
 
-}  // namespace ormxx
+}  // namespace ormxx::internal
 
 #endif  // ORMXX_TYPES_CHECK_HAS_ORMXX_EXTERNAL_STRUCT_SCHEMA_ENTRANCE_H

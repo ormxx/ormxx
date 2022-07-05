@@ -4,3 +4,5 @@
 build
 
 unittest.env
+
+__snapshots__

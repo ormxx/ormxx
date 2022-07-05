@@ -6,10 +6,11 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "./interface/adaptor.h"
-#include "./interface/connection.h"
-#include "./interface/result.h"
-#include "./sql/generate_drop_table_sql.h"
+#include "./interface/index.h"                // IWYU pragma: export
+#include "./internal/macros.h"                // IWYU pragma: export
+#include "./options/index.h"                  // IWYU pragma: export
+#include "./sql/generate_create_table_sql.h"  // IWYU pragma: export
+#include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
 
 namespace ormxx {
 
@@ -113,8 +114,22 @@ public:
 
     template <typename T>
     Result DropTable() {
-        auto sql = GenerateDropTableSQL<T>(nullptr);
-        return Execute(sql.Value());
+        auto sql_res = GenerateDropTableSQL<T>();
+        if (!sql_res.IsOK()) {
+            return sql_res;
+        }
+
+        return Execute(sql_res.Value());
+    }
+
+    template <typename T>
+    Result CreateTable() {
+        auto sql_res = GenerateCreateTableSQL<T>();
+        if (!sql_res.IsOK()) {
+            return sql_res;
+        }
+
+        return Execute(sql_res.Value());
     }
 
 private:

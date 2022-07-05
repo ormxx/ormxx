@@ -5,7 +5,7 @@
 
 #include "../options/table_options.h"
 
-namespace ormxx {
+namespace ormxx::internal {
 
 template <typename T>
 class has_ormxx_get_table_options {
@@ -26,6 +26,6 @@ public:
 template <typename T>
 inline constexpr bool has_ormxx_get_table_options_v = has_ormxx_get_table_options<T>::value;
 
-}  // namespace ormxx
+}  // namespace ormxx::internal
 
 #endif  // ORMXX_TYPES_CHECK_HAS_ORMXX_GET_TABLE_OPTIONS_H

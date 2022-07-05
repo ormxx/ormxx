@@ -23,6 +23,47 @@ TEST_F(ORMXXTest, drop_table_test) {
     auto* orm = GetORMXX();
 
     {
+        auto sql_res = GenerateDropTableSQL<model::User>();
+        EXPECT_TRUE(sql_res.IsOK());
+        auto sql = sql_res.Value();
+        EXPECT_EQ(sql, std::string("DROP TABLE IF EXISTS `User`;"));
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+}
+
+TEST_F(ORMXXTest, create_table_test) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto sql_res = GenerateCreateTableSQL<model::User>();
+        EXPECT_TRUE(sql_res.IsOK());
+        auto sql = sql_res.Value();
+        EXPECT_EQ(sql, std::string(R"(
+CREATE TABLE `User` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `name` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'name',
+    `age` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'age',
+    PRIMARY KEY (`id`) USING BTREE,
+    INDEX `idx_name_age` (`name`, `age`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COMMENT = 'User';
+)"));
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
         auto res = orm->DropTable<model::User>();
         EXPECT_TRUE(res.IsOK());
     }

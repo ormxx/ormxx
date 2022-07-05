@@ -15,6 +15,7 @@ public:
     auto operator()([[maybe_unused]] T* t, F struct_field_type, std::string_view field_name, Opt&&... opts) const {
         auto options = FieldOptionsStruct<std::remove_const_t<T>, F>{};
         options.origin_field_name = field_name;
+        options.field_name = field_name;
         options.struct_field_type = struct_field_type;
 
         FieldOptions::ApplyFieldOptions(options, std::forward<Opt>(opts)...);
@@ -26,6 +27,7 @@ public:
             Opt&&... opts) const {
         auto options = FieldOptionsStruct<std::remove_const_t<T>, F>{};
         options.origin_field_name = field_name;
+        options.field_name = field_name;
         options.struct_field_type = struct_field_type;
 
         FieldOptions::ApplyFieldOptions(options, std::forward<Opt>(opts)...);

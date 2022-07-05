@@ -11,8 +11,8 @@
 namespace ormxx {
 
 template <typename T>
-ResultOr<std::string> GenerateDropTableSQL([[maybe_unused]] T* t) {
-    const auto table_options = internal::InjectEntrance::GetTableOptions<T>(t);
+ResultOr<std::string> GenerateDropTableSQL() {
+    const auto table_options = internal::InjectEntrance::GetTableOptions<T>(nullptr);
     return fmt::format("DROP TABLE IF EXISTS `{}`;", table_options.table_name);
 }
 

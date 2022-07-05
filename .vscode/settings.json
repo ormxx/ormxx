@@ -28,7 +28,12 @@
         "codecov",
         "declval",
         "GCOVR",
+        "LONGTEXT",
+        "MEDIUMINT",
+        "MEDIUMTEXT",
         "mysqlclient",
-        "ormxx"
+        "ormxx",
+        "TINYINT",
+        "TINYTEXT"
     ]
 }

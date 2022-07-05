@@ -1,77 +1,90 @@
 #ifndef ORMXX_INTERNAL_MACROS_H
 #define ORMXX_INTERNAL_MACROS_H
 
+#include <cstddef>
 #include <functional>
 #include <string>
 
+#include "../options/field_options.h"
+#include "../options/key_options.h"
 #include "../options/table_options.h"
 #include "../types_check/has_ormxx_external_get_table_options.h"
 #include "../types_check/has_ormxx_external_struct_schema_entrance.h"
 #include "../types_check/has_ormxx_get_table_options.h"
 #include "../types_check/has_ormxx_struct_schema_entrance.h"
+#include "../types_check/is_visit_field_func.h"
+#include "../types_check/is_visit_key_func.h"
 #include "./create_entrance_field_options.h"
 #include "./inject_entrance.h"
+#include "./struct_schema_entrance_options.h"
 #include "./utils.h"
 
 #define ORMXX_STR(x) #x
 
-#define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                                     \
-private:                                                                                                   \
-    friend class ::ormxx::has_ormxx_get_table_options<Struct>;                                             \
-    friend class ::ormxx::has_ormxx_get_table_options<const Struct>;                                       \
-    friend class ::ormxx::has_ormxx_struct_schema_entrance<Struct>;                                        \
-    friend class ::ormxx::has_ormxx_struct_schema_entrance<const Struct>;                                  \
-    friend class ::ormxx::internal::InjectEntrance;                                                        \
-                                                                                                           \
-    static ::ormxx::TableOptions __ORMXX_GetTableOptions() {                                               \
-        static const auto options = std::invoke([]() {                                                     \
-            ::ormxx::TableOptions options;                                                                 \
-            options.origin_struct_name = ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct)); \
-            options.table_name = ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct));         \
-                                                                                                           \
-            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__);                              \
-            return options;                                                                                \
-        });                                                                                                \
-                                                                                                           \
-        return options;                                                                                    \
-    }                                                                                                      \
-                                                                                                           \
-    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,   \
-            typename Func>                                                                                 \
-    static void __ORMXX_StructSchemaEntrance(T* s, Func&& func) {                                          \
-        using _Struct = Struct;
+#define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct)                                                        \
+private:                                                                                                 \
+    friend class ::ormxx::internal::has_ormxx_get_table_options<Struct>;                                 \
+    friend class ::ormxx::internal::has_ormxx_get_table_options<const Struct>;                           \
+    friend class ::ormxx::internal::has_ormxx_struct_schema_entrance<Struct>;                            \
+    friend class ::ormxx::internal::has_ormxx_struct_schema_entrance<const Struct>;                      \
+    friend class ::ormxx::internal::InjectEntrance;                                                      \
+                                                                                                         \
+    using __ORMXX_Struct = Struct;                                                                       \
+    inline static const std::string __ORMXX_Struct_Name =                                                \
+            ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct));                            \
+                                                                                                         \
+    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true, \
+            typename Func>                                                                               \
+    static void __ORMXX_StructSchemaEntrance(                                                            \
+            T* s, const ::ormxx::internal::StructSchemaEntranceOptions& options, Func&& func) {          \
+        using _Struct = Struct;                                                                          \
+        size_t size = 0;
 
-#define ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(field, ...)                              \
-    {                                                                              \
-        auto options = ::ormxx::internal::CreateEntranceFieldOptions(              \
-                s, &(s->field), &_Struct::field, ORMXX_STR(field), ##__VA_ARGS__); \
-        func(&(s->field), options);                                                \
+#define ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(field, ...)                                                    \
+    if constexpr (::ormxx::internal::is_visit_field_func_v<Func>) {                                      \
+        if (options.visit_field) {                                                                       \
+            ++size;                                                                                      \
+                                                                                                         \
+            const char* origin_field_name = ORMXX_STR(field);                                            \
+            static const auto field_options = ::ormxx::internal::CreateEntranceFieldOptions(             \
+                    s, &(s->field), &_Struct::field, origin_field_name, ##__VA_ARGS__);                  \
+                                                                                                         \
+            if (options.visit_for_each || (options.visit_field_by_index && options.index + 1 == size) || \
+                    (options.visit_field_by_name && !strcmp(origin_field_name, options.name))) {         \
+                func(&(s->field), field_options);                                                        \
+            }                                                                                            \
+        }                                                                                                \
     }
 
-#define ORMXX_STRUCT_SCHEMA_DECLARE_END }
+#define ORMXX_STRUCT_SCHEMA_DECLARE_KEY(...)                               \
+    if constexpr (::ormxx::internal::is_visit_key_func_v<Func>) {          \
+        if (options.visit_key) {                                           \
+            ++size;                                                        \
+                                                                           \
+            static const auto key_options = std::invoke([]() {             \
+                return ::ormxx::KeyOptions::CreateKeyOptions(__VA_ARGS__); \
+            });                                                            \
+                                                                           \
+            if (options.visit_for_each) {                                  \
+                func(key_options);                                         \
+            }                                                              \
+        }                                                                  \
+    }
 
-#define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                            \
-    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true>   \
-    static ::ormxx::TableOptions __ORMXXExternal_GetTableOptions([[maybe_unused]] T* s) {                  \
-        static const auto options = std::invoke([]() {                                                     \
-            ::ormxx::TableOptions options;                                                                 \
-            options.origin_struct_name = ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct)); \
-            options.table_name = ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct));         \
-                                                                                                           \
-            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__);                              \
-            return options;                                                                                \
-        });                                                                                                \
-                                                                                                           \
-        return options;                                                                                    \
-    }                                                                                                      \
-                                                                                                           \
-    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,   \
-            typename Func>                                                                                 \
-    static auto __ORMXXExternal_StructSchemaEntrance(T* s, Func&& func) {                                  \
-        using _Struct = Struct;
-
-#define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_FIELD(field, ...) ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(field, ##__VA_ARGS__)
-
-#define ORMXX_EXTERNAL_STRUCT_SCHEMA_DECLARE_END }
+#define ORMXX_STRUCT_SCHEMA_DECLARE_END(...)                                  \
+    }                                                                         \
+                                                                              \
+    static ::ormxx::TableOptions __ORMXX_GetTableOptions() {                  \
+        static const auto options = std::invoke([]() {                        \
+            ::ormxx::TableOptions options;                                    \
+            options.origin_struct_name = __ORMXX_Struct_Name;                 \
+            options.table_name = __ORMXX_Struct_Name;                         \
+                                                                              \
+            ::ormxx::TableOptions::ApplyTableOptions(options, ##__VA_ARGS__); \
+            return options;                                                   \
+        });                                                                   \
+                                                                              \
+        return options;                                                       \
+    }
 
 #endif  // ORMXX_INTERNAL_MACROS_H

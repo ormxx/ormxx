@@ -7,6 +7,7 @@
 #include "../types_check/has_ormxx_external_struct_schema_entrance.h"
 #include "../types_check/has_ormxx_get_table_options.h"
 #include "../types_check/has_ormxx_struct_schema_entrance.h"
+#include "./struct_schema_entrance_options.h"
 
 namespace ormxx::internal {
 
@@ -25,11 +26,11 @@ public:
     }
 
     template <typename T, typename Func>
-    static void StructSchemaEntrance(T* t, Func&& func) {
+    static void StructSchemaEntrance(T* t, const StructSchemaEntranceOptions& options, Func&& func) {
         if constexpr (has_ormxx_struct_schema_entrance_v<T>) {
-            return T::__ORMXX_StructSchemaEntrance(t, func);
+            return T::__ORMXX_StructSchemaEntrance(t, options, func);
         } else if constexpr (has_ormxx_external_struct_schema_entrance_v<T>) {
-            return __ORMXXExternal_StructSchemaEntrance(t, func);
+            return __ORMXXExternal_StructSchemaEntrance(t, options, func);
         } else {
             static_assert(false_v<T>,
                     "T does not have T::__ORMXX_StructSchemaEntrance() member function or __ORMXXExternal_StructSchemaEntrance() external function");
