@@ -12,7 +12,7 @@ namespace internal {
 template <typename T, typename F>
 struct FieldOptionsStruct {
     std::string origin_field_name{""};
-    F field_type;
+    F struct_field_type;
 
     std::string field_name{""};
     std::string comment{""};
