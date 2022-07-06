@@ -17,9 +17,9 @@ namespace ormxx {
 
 template <typename T>
 ResultOr<std::string> GenerateCreateTableSQL() {
-    T t;
-
+    const T t = T{};
     const auto table_options = internal::InjectEntrance::GetTableOptions(&t);
+
     std::string sql = "\n";
 
     sql += fmt::format("CREATE TABLE `{}` (\n", table_options.table_name);
