@@ -14,7 +14,7 @@ struct User {
     std::string Name{""};
     int Age{0};
 
-    ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(User)
+    ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(User, ID, Name, Age)
     ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(ID,
                                       FieldOptions::FieldType::BigIntUnsigned(),
                                       FieldOptions::FieldName("id"),

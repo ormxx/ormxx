@@ -21,7 +21,7 @@
 
 #define ORMXX_STR(x) #x
 
-#define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct)                                               \
+#define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                          \
 private:                                                                                        \
     friend class ::ormxx::internal::has_ormxx_get_table_options<Struct>;                        \
     friend class ::ormxx::internal::has_ormxx_get_table_options<const Struct>;                  \
