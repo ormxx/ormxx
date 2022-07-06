@@ -11,6 +11,7 @@ enum class ErrorCode {
     ConnectionError,
     SchemaDeclareError,
     GenerateSQLError,
+    NoInvalidPrimaryKeyError,
     ExecuteError,
     OtherError,
 };
@@ -21,6 +22,7 @@ inline auto ErrorCodeToStr(ErrorCode error_code) {
             {ErrorCode::ConnectionError, "ConnectionError"},
             {ErrorCode::SchemaDeclareError, "SchemaDeclareError"},
             {ErrorCode::GenerateSQLError, "GenerateSQLError"},
+            {ErrorCode::NoInvalidPrimaryKeyError, "NoInvalidPrimaryKeyError"},
             {ErrorCode::ExecuteError, "ExecuteError"},
             {ErrorCode::OtherError, "OtherError"},
     };

@@ -32,10 +32,10 @@ struct User {
                                       FieldOptions::NotNull(),
                                       FieldOptions::Comment("age"))
 
-    ORMXX_STRUCT_SCHEMA_DECLARE_KEY(KeyOptions::KeyType(KeyOptions::KeyType::PRIMARY),
+    ORMXX_STRUCT_SCHEMA_DECLARE_KEY(KeyOptions::KeyType::PRIMARY,
                                     KeyOptions::Field({"ID"}),
                                     KeyOptions::EngineType(KeyOptions::EngineType::BTREE))
-    ORMXX_STRUCT_SCHEMA_DECLARE_KEY(KeyOptions::KeyType(KeyOptions::KeyType::INDEX),
+    ORMXX_STRUCT_SCHEMA_DECLARE_KEY(KeyOptions::KeyType::INDEX,
                                     KeyOptions::Field({"Name", "Age"}),
                                     KeyOptions::EngineType(KeyOptions::EngineType::BTREE))
     ORMXX_STRUCT_SCHEMA_DECLARE_END(TableOptions::TableName("user"),

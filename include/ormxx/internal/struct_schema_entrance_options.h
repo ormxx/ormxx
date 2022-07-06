@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+#include "../options/key_options.h"
+
 namespace ormxx::internal {
 
 struct StructSchemaEntranceOptions {
@@ -11,8 +13,11 @@ struct StructSchemaEntranceOptions {
     bool visit_for_each{false};
     bool visit_field_by_index{false};
     bool visit_field_by_name{false};
+    bool visit_key_by_key_type{false};
+
     size_t index{0};
     const char* name{nullptr};
+    KeyOptions::KeyType key_type{KeyOptions::KeyType::PRIMARY};
 };
 
 class StructSchemaEntranceOptionsBuilder {
@@ -34,13 +39,21 @@ public:
         return *this;
     }
 
-    StructSchemaEntranceOptionsBuilder& WithVisitFieldByIndex(bool visit_field_by_index = true) {
-        options_.visit_field_by_index = visit_field_by_index;
+    StructSchemaEntranceOptionsBuilder& WithVisitFieldByIndex(size_t index) {
+        options_.visit_field_by_index = true;
+        options_.index = index;
         return *this;
     }
 
-    StructSchemaEntranceOptionsBuilder& WithVisitFieldByName(bool visit_field_by_name = true) {
-        options_.visit_field_by_name = visit_field_by_name;
+    StructSchemaEntranceOptionsBuilder& WithVisitFieldByName(const char* name) {
+        options_.visit_field_by_name = true;
+        options_.name = name;
+        return *this;
+    }
+
+    StructSchemaEntranceOptionsBuilder& WithVisitKeyByKeyType(KeyOptions::KeyType key_type) {
+        options_.visit_key_by_key_type = true;
+        options_.key_type = key_type;
         return *this;
     }
 
@@ -51,6 +64,11 @@ public:
 
     StructSchemaEntranceOptionsBuilder& WithName(const char* name) {
         options_.name = name;
+        return *this;
+    }
+
+    StructSchemaEntranceOptionsBuilder& WithKeyType(KeyOptions::KeyType key_type) {
+        options_.key_type = key_type;
         return *this;
     }
 

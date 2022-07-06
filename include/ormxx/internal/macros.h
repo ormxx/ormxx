@@ -57,19 +57,20 @@ private:                                                                        
         }                                                                                                \
     }
 
-#define ORMXX_STRUCT_SCHEMA_DECLARE_KEY(...)                               \
-    if constexpr (::ormxx::internal::is_visit_key_func_v<Func>) {          \
-        if (options.visit_key) {                                           \
-            ++size;                                                        \
-                                                                           \
-            static const auto key_options = std::invoke([]() {             \
-                return ::ormxx::KeyOptions::CreateKeyOptions(__VA_ARGS__); \
-            });                                                            \
-                                                                           \
-            if (options.visit_for_each) {                                  \
-                func(key_options);                                         \
-            }                                                              \
-        }                                                                  \
+#define ORMXX_STRUCT_SCHEMA_DECLARE_KEY(__key_type, ...)                                                       \
+    if constexpr (::ormxx::internal::is_visit_key_func_v<Func>) {                                              \
+        if (options.visit_key) {                                                                               \
+            ++size;                                                                                            \
+                                                                                                               \
+            static const auto key_options = std::invoke([]() {                                                 \
+                return ::ormxx::KeyOptions::CreateKeyOptions(::ormxx::KeyOptions::WithKeyType(__key_type),     \
+                                                             ##__VA_ARGS__);                                   \
+            });                                                                                                \
+                                                                                                               \
+            if (options.visit_for_each || (options.visit_key_by_key_type && options.key_type == __key_type)) { \
+                func(key_options);                                                                             \
+            }                                                                                                  \
+        }                                                                                                      \
     }
 
 #define ORMXX_STRUCT_SCHEMA_DECLARE_END(...)                                  \

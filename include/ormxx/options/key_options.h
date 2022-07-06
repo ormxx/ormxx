@@ -6,7 +6,7 @@
 
 namespace ormxx {
 
-struct KeyOptions {
+class KeyOptions {
 public:
     enum class KeyType {
         PRIMARY,
@@ -61,7 +61,7 @@ public:
     }
 
 public:
-    static auto KeyType(KeyType key_type) {
+    static auto WithKeyType(KeyType key_type) {
         return [key_type](auto& options) {
             options.key_type = key_type;
         };
