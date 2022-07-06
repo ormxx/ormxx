@@ -38,12 +38,12 @@ struct User {
 
     ORMXX_STRUCT_SCHEMA_DECLARE_KEY(
         KeyOptions::KeyType(KeyOptions::KeyType::PRIMARY),
-        KeyOptions::FieldName({"ID"}),
+        KeyOptions::Field({"ID"}),
         KeyOptions::EngineType(KeyOptions::EngineType::BTREE)
     )
     ORMXX_STRUCT_SCHEMA_DECLARE_KEY(
         KeyOptions::KeyType(KeyOptions::KeyType::INDEX),
-        KeyOptions::FieldName({"Name", "Age"}),
+        KeyOptions::Field({"Name", "Age"}),
         KeyOptions::EngineType(KeyOptions::EngineType::BTREE)
     )
     ORMXX_STRUCT_SCHEMA_DECLARE_END(

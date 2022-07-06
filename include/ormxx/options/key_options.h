@@ -79,7 +79,7 @@ public:
         };
     }
 
-    static auto FieldName(const std::vector<std::string>& field_name) {
+    static auto Field(const std::vector<std::string>& field_name) {
         return [field_name](auto& options) {
             options.field_name = field_name;
         };
