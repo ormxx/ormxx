@@ -7,6 +7,8 @@
 #include "ormxx/ormxx.h"
 
 #include "./get_orm.h"
+
+#include "./model/user.error_schema.h"
 #include "./model/user.h"
 
 using namespace ormxx;
@@ -18,6 +20,22 @@ protected:
     virtual void SetUp() override {}
     virtual void TearDown() override {}
 };
+
+TEST_F(ORMXXTest, check_schema_test) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->CheckSchema<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CheckSchema<model::UserErrorSchema>();
+        EXPECT_FALSE(res.IsOK());
+        auto err_msg = res.Message();
+        EXPECT_EQ(err_msg, std::string("field name not found. [field name: `ID2`]"));
+    }
+}
 
 TEST_F(ORMXXTest, drop_table_test) {
     auto* orm = GetORMXX();

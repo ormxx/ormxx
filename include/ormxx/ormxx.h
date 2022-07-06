@@ -132,6 +132,16 @@ public:
         return Execute(sql_res.Value());
     }
 
+    template <typename T>
+    Result CheckSchema() {
+        auto sql_res = GenerateCreateTableSQL<T>();
+        if (!sql_res.IsOK()) {
+            return sql_res;
+        }
+
+        return Result::Builder(Result::ErrorCode::OK).Build();
+    }
+
 private:
     ResultOr<Connection*> getConnection(ConnectionType connection_type = ConnectionType::WRITE) {
         auto& node = connection_pool_node_map_[connection_type];

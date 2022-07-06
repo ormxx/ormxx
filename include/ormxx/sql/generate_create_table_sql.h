@@ -68,9 +68,15 @@ ResultOr<std::string> GenerateCreateTableSQL() {
     }
 
     {
+        Result res;
+
         auto options = internal::StructSchemaEntranceOptionsBuilder().WithVisitKey().WithVisitForEach().Build();
         internal::InjectEntrance::StructSchemaEntrance(
-                &t, options, [&sql, &ix, &origin_field_name_map_field_name](const KeyOptions &options) {
+                &t, options, [&sql, &ix, &origin_field_name_map_field_name, &res](const KeyOptions &options) {
+                    if (!res.IsOK()) {
+                        return;
+                    }
+
                     if (ix > 0) {
                         sql += ",\n";
                     }
@@ -86,9 +92,15 @@ ResultOr<std::string> GenerateCreateTableSQL() {
                         } else {
                             std::string key_name = KeyOptions::KeyTypePrefixStr(options.key_type);
                             for (const auto &field_name : options.field_name) {
-                                if (origin_field_name_map_field_name.count(field_name)) {
-                                    key_name += fmt::format("_{}", origin_field_name_map_field_name[field_name]);
+                                if (origin_field_name_map_field_name.count(field_name) == 0) {
+                                    res = Result::Builder(Result::ErrorCode::SchemaDeclareError)
+                                                  .WithErrorMessage(fmt::format(
+                                                          "field name not found. [field name: `{}`]", field_name))
+                                                  .Build();
+                                    return;
                                 }
+
+                                key_name += fmt::format("_{}", origin_field_name_map_field_name[field_name]);
                             }
 
                             key_sql += fmt::format(" `{}`", key_name);
@@ -103,9 +115,15 @@ ResultOr<std::string> GenerateCreateTableSQL() {
                                 key_sql += ", ";
                             }
 
-                            if (origin_field_name_map_field_name.count(options.field_name[i])) {
-                                key_sql += fmt::format("`{}`", origin_field_name_map_field_name[options.field_name[i]]);
+                            if (origin_field_name_map_field_name.count(options.field_name[i]) == 0) {
+                                res = Result::Builder(Result::ErrorCode::SchemaDeclareError)
+                                              .WithErrorMessage(fmt::format("field name not found. [field name: `{}`]",
+                                                                            options.field_name[i]))
+                                              .Build();
+                                return;
                             }
+
+                            key_sql += fmt::format("`{}`", origin_field_name_map_field_name[options.field_name[i]]);
                         }
 
                         key_sql += ")";
@@ -115,6 +133,10 @@ ResultOr<std::string> GenerateCreateTableSQL() {
 
                     sql += fmt::format("    {}", key_sql);
                 });
+
+        if (!res.IsOK()) {
+            return res;
+        }
     }
 
     sql += "\n)";
