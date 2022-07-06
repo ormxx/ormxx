@@ -10,6 +10,7 @@ enum class ErrorCode {
     OK = 0,
     ConnectionError,
     SchemaDeclareError,
+    GenerateSQLError,
     ExecuteError,
     OtherError,
 };
@@ -19,6 +20,7 @@ inline auto ErrorCodeToStr(ErrorCode error_code) {
             {ErrorCode::OK, "OK"},
             {ErrorCode::ConnectionError, "ConnectionError"},
             {ErrorCode::SchemaDeclareError, "SchemaDeclareError"},
+            {ErrorCode::GenerateSQLError, "GenerateSQLError"},
             {ErrorCode::ExecuteError, "ExecuteError"},
             {ErrorCode::OtherError, "OtherError"},
     };

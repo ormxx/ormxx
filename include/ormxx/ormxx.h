@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <list>
+#include <memory>
 #include <mutex>
 #include <unordered_map>
 
@@ -11,6 +12,7 @@
 #include "./options/index.h"                  // IWYU pragma: export
 #include "./sql/generate_create_table_sql.h"  // IWYU pragma: export
 #include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
+#include "./sql/generate_insert_sql.h"        // IWYU pragma: export
 
 namespace ormxx {
 
@@ -113,7 +115,17 @@ public:
     }
 
     template <typename T>
-    Result DropTable() {
+    Result CheckSchema() {
+        auto sql_res = GenerateCreateTableSQL<T>();
+        if (!sql_res.IsOK()) {
+            return sql_res;
+        }
+
+        return Result::Builder(Result::ErrorCode::OK).Build();
+    }
+
+    template <typename T>
+    ResultOr<std::unique_ptr<ExecuteResult>> DropTable() {
         auto sql_res = GenerateDropTableSQL<T>();
         if (!sql_res.IsOK()) {
             return sql_res;
@@ -123,7 +135,7 @@ public:
     }
 
     template <typename T>
-    Result CreateTable() {
+    ResultOr<std::unique_ptr<ExecuteResult>> CreateTable() {
         auto sql_res = GenerateCreateTableSQL<T>();
         if (!sql_res.IsOK()) {
             return sql_res;
@@ -133,13 +145,18 @@ public:
     }
 
     template <typename T>
-    Result CheckSchema() {
-        auto sql_res = GenerateCreateTableSQL<T>();
+    ResultOr<std::unique_ptr<ExecuteResult>> Insert(T* t) {
+        auto sql_res = GenerateInsertSQL(t);
         if (!sql_res.IsOK()) {
             return sql_res;
         }
 
-        return Result::Builder(Result::ErrorCode::OK).Build();
+        return ExecuteUpdate(sql_res.Value());
+    }
+
+    template <typename T>
+    ResultOr<std::unique_ptr<ExecuteResult>> Insert(T t) {
+        return Insert(&t);
     }
 
 private:

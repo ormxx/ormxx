@@ -9,7 +9,6 @@
 #include "../interface/result.h"
 #include "../internal/field_to_string.h"
 #include "../internal/inject_entrance.h"
-#include "../internal/overload.h"
 #include "../internal/struct_schema_entrance_options.h"
 #include "../options/key_options.h"
 #include "../options/table_options.h"
