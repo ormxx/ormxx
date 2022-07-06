@@ -68,8 +68,8 @@ public:
     ResultOr<Connection*> GetConnection(ConnectionType type = ConnectionType::WRITE) override {
         if (!HasConfig(type)) {
             return Result::Builder(Result::ErrorCode::ConnectionError)
-                    .WithErrorMessage(fmt::format(
-                            "No config found. [connection type={}]", type == ConnectionType::WRITE ? "WRITE" : "READ"))
+                    .WithErrorMessage(fmt::format("No config found. [connection type={}]",
+                                                  type == ConnectionType::WRITE ? "WRITE" : "READ"))
                     .Build();
         }
 

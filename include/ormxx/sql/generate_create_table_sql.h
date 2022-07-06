@@ -11,8 +11,8 @@
 #include "../internal/inject_entrance.h"
 #include "../internal/overload.h"
 #include "../internal/struct_schema_entrance_options.h"
+#include "../options/key_options.h"
 #include "../options/table_options.h"
-#include "ormxx/options/key_options.h"
 
 namespace ormxx {
 
@@ -32,7 +32,7 @@ ResultOr<std::string> GenerateCreateTableSQL() {
     {
         auto options = internal::StructSchemaEntranceOptionsBuilder().WithVisitField().WithVisitForEach().Build();
         internal::InjectEntrance::StructSchemaEntrance(
-                &t, options, [&sql, &ix, &origin_field_name_map_field_name](auto&& field, auto&& options) {
+                &t, options, [&sql, &ix, &origin_field_name_map_field_name](auto &&field, auto &&options) {
                     if (ix > 0) {
                         sql += ",\n";
                     }
@@ -47,10 +47,10 @@ ResultOr<std::string> GenerateCreateTableSQL() {
 
                     if (options.not_null) {
                         field_sql += " NOT NULL";
+
                         if (!options.auto_increment) {
                             field_sql += fmt::format(" DEFAULT {}", internal::FieldToString(field));
                         }
-
                     } else {
                         field_sql += " DEFAULT NULL";
                     }
@@ -70,7 +70,7 @@ ResultOr<std::string> GenerateCreateTableSQL() {
     {
         auto options = internal::StructSchemaEntranceOptionsBuilder().WithVisitKey().WithVisitForEach().Build();
         internal::InjectEntrance::StructSchemaEntrance(
-                &t, options, [&sql, &ix, &origin_field_name_map_field_name](const KeyOptions& options) {
+                &t, options, [&sql, &ix, &origin_field_name_map_field_name](const KeyOptions &options) {
                     if (ix > 0) {
                         sql += ",\n";
                     }
@@ -85,7 +85,7 @@ ResultOr<std::string> GenerateCreateTableSQL() {
                             key_sql += fmt::format(" `{}`", options.key_name);
                         } else {
                             std::string key_name = KeyOptions::KeyTypePrefixStr(options.key_type);
-                            for (const auto& field_name : options.field_name) {
+                            for (const auto &field_name : options.field_name) {
                                 if (origin_field_name_map_field_name.count(field_name)) {
                                     key_name += fmt::format("_{}", origin_field_name_map_field_name[field_name]);
                                 }
@@ -97,6 +97,7 @@ ResultOr<std::string> GenerateCreateTableSQL() {
 
                     {
                         key_sql += " (";
+
                         for (size_t i = 0; i < options.field_name.size(); i++) {
                             if (i > 0) {
                                 key_sql += ", ";
@@ -106,6 +107,7 @@ ResultOr<std::string> GenerateCreateTableSQL() {
                                 key_sql += fmt::format("`{}`", origin_field_name_map_field_name[options.field_name[i]]);
                             }
                         }
+
                         key_sql += ")";
                     }
 

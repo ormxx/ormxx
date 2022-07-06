@@ -31,7 +31,8 @@ TEST_F(MySQLClientTest, mysqlclient_test) {
     }
 
     {
-        auto res = orm->Execute(fmt::format(R"(
+        auto res = orm->Execute(fmt::format(
+                R"(
 CREATE TABLE {}  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'incr id',
   `main_uuid` varchar(64) NOT NULL COMMENT 'main uuid',
@@ -44,45 +45,54 @@ CREATE TABLE {}  (
   INDEX `uniq_main_uuid` (`main_uuid`) USING BTREE
 ) ENGINE = InnoDB  CHARACTER SET = utf8mb4  COMMENT = 'mysqlclient test table';
 )",
-                kTableName));
+                kTableName
+        ));
         EXPECT_TRUE(res.IsOK());
     }
 
     {
-        auto res = orm->ExecuteUpdate(fmt::format(R"(
+        auto res = orm->ExecuteUpdate(fmt::format(
+                R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_1', '1');
         )",
-                kTableName));
+                kTableName
+        ));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
     }
 
     {
-        auto res = orm->ExecuteUpdate(fmt::format(R"(
+        auto res = orm->ExecuteUpdate(fmt::format(
+                R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_2', '2');
         )",
-                kTableName));
+                kTableName
+        ));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
     }
 
     {
-        auto res = orm->ExecuteUpdate(fmt::format(R"(
+        auto res = orm->ExecuteUpdate(fmt::format(
+                R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_3', '3');
         )",
-                kTableName));
+                kTableName
+        ));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
     }
 
     {
-        auto res = orm->ExecuteQuery(fmt::format(R"(
+        auto res = orm->ExecuteQuery(fmt::format(
+                R"(
     SELECT * FROM {};
             )",
-                kTableName));
+                kTableName
+        ));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsCount(), 3);
@@ -101,11 +111,13 @@ INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29
     }
 
     {
-        auto res = orm->ExecuteUpdate(fmt::format(R"(
+        auto res = orm->ExecuteUpdate(fmt::format(
+                R"(
 UPDATE {}
 SET `event_body` = '4';
         )",
-                kTableName));
+                kTableName
+        ));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 3);

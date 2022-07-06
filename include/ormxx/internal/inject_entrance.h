@@ -20,7 +20,8 @@ public:
         } else if constexpr (has_ormxx_external_get_table_options_v<T>) {
             return __ORMXXExternal_GetTableOptions(t);
         } else {
-            static_assert(false_v<T>,
+            static_assert(
+                    false_v<T>,
                     "T does not have T::__ORMXX_GetTableOptions() member function or __ORMXXExternal_GetTableOptions() external function");
         }
     }
@@ -32,7 +33,8 @@ public:
         } else if constexpr (has_ormxx_external_struct_schema_entrance_v<T>) {
             return __ORMXXExternal_StructSchemaEntrance(t, options, func);
         } else {
-            static_assert(false_v<T>,
+            static_assert(
+                    false_v<T>,
                     "T does not have T::__ORMXX_StructSchemaEntrance() member function or __ORMXXExternal_StructSchemaEntrance() external function");
         }
     }

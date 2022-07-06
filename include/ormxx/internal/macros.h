@@ -21,23 +21,24 @@
 
 #define ORMXX_STR(x) #x
 
-#define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct)                                                        \
-private:                                                                                                 \
-    friend class ::ormxx::internal::has_ormxx_get_table_options<Struct>;                                 \
-    friend class ::ormxx::internal::has_ormxx_get_table_options<const Struct>;                           \
-    friend class ::ormxx::internal::has_ormxx_struct_schema_entrance<Struct>;                            \
-    friend class ::ormxx::internal::has_ormxx_struct_schema_entrance<const Struct>;                      \
-    friend class ::ormxx::internal::InjectEntrance;                                                      \
-                                                                                                         \
-    using __ORMXX_Struct = Struct;                                                                       \
-    inline static const std::string __ORMXX_Struct_Name =                                                \
-            ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct));                            \
-                                                                                                         \
-    template <typename T, std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true, \
-            typename Func>                                                                               \
-    static void __ORMXX_StructSchemaEntrance(                                                            \
-            T* s, const ::ormxx::internal::StructSchemaEntranceOptions& options, Func&& func) {          \
-        using _Struct = Struct;                                                                          \
+#define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct)                                               \
+private:                                                                                        \
+    friend class ::ormxx::internal::has_ormxx_get_table_options<Struct>;                        \
+    friend class ::ormxx::internal::has_ormxx_get_table_options<const Struct>;                  \
+    friend class ::ormxx::internal::has_ormxx_struct_schema_entrance<Struct>;                   \
+    friend class ::ormxx::internal::has_ormxx_struct_schema_entrance<const Struct>;             \
+    friend class ::ormxx::internal::InjectEntrance;                                             \
+                                                                                                \
+    using __ORMXX_Struct = Struct;                                                              \
+    inline static const std::string __ORMXX_Struct_Name =                                       \
+            ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct));                   \
+                                                                                                \
+    template <typename T,                                                                       \
+              std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,    \
+              typename Func>                                                                    \
+    static void __ORMXX_StructSchemaEntrance(                                                   \
+            T* s, const ::ormxx::internal::StructSchemaEntranceOptions& options, Func&& func) { \
+        using _Struct = Struct;                                                                 \
         size_t size = 0;
 
 #define ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(field, ...)                                                    \
@@ -50,7 +51,7 @@ private:                                                                        
                     s, &(s->field), &_Struct::field, origin_field_name, ##__VA_ARGS__);                  \
                                                                                                          \
             if (options.visit_for_each || (options.visit_field_by_index && options.index + 1 == size) || \
-                    (options.visit_field_by_name && !strcmp(origin_field_name, options.name))) {         \
+                (options.visit_field_by_name && !strcmp(origin_field_name, options.name))) {             \
                 func(&(s->field), field_options);                                                        \
             }                                                                                            \
         }                                                                                                \

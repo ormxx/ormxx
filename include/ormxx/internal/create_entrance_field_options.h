@@ -23,8 +23,10 @@ public:
     }
 
     template <typename T, typename F, typename... Opt>
-    auto operator()([[maybe_unused]] std::optional<T>* t, F struct_field_type, std::string_view field_name,
-            Opt&&... opts) const {
+    auto operator()([[maybe_unused]] std::optional<T>* t,
+                    F struct_field_type,
+                    std::string_view field_name,
+                    Opt&&... opts) const {
         auto options = FieldOptionsStruct<std::remove_const_t<T>, F>{};
         options.origin_field_name = field_name;
         options.field_name = field_name;
@@ -34,16 +36,22 @@ public:
         return options;
     }
 
-    template <typename Struct, std::enable_if_t<std::is_const_v<Struct>, bool> = true, typename T, typename F,
-            typename... Opt>
+    template <typename Struct,
+              std::enable_if_t<std::is_const_v<Struct>, bool> = true,
+              typename T,
+              typename F,
+              typename... Opt>
     auto operator()(
             [[maybe_unused]] Struct* s, T* t, F struct_field_type, std::string_view field_name, Opt&&... opts) const {
         return operator()(
                 static_cast<const T*>(t), std::forward<F>(struct_field_type), field_name, std::forward<Opt>(opts)...);
     }
 
-    template <typename Struct, std::enable_if_t<!std::is_const_v<Struct>, bool> = true, typename T, typename F,
-            typename... Opt>
+    template <typename Struct,
+              std::enable_if_t<!std::is_const_v<Struct>, bool> = true,
+              typename T,
+              typename F,
+              typename... Opt>
     auto operator()(
             [[maybe_unused]] Struct* s, T* t, F struct_field_type, std::string_view field_name, Opt&&... opts) const {
         return operator()(t, std::forward<F>(struct_field_type), field_name, std::forward<Opt>(opts)...);
