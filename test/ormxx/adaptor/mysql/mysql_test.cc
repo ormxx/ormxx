@@ -45,8 +45,7 @@ CREATE TABLE {}  (
   INDEX `uniq_main_uuid` (`main_uuid`) USING BTREE
 ) ENGINE = InnoDB  CHARACTER SET = utf8mb4  COMMENT = 'mysqlclient test table';
 )",
-                kTableName
-        ));
+                kTableName));
         EXPECT_TRUE(res.IsOK());
     }
 
@@ -55,8 +54,7 @@ CREATE TABLE {}  (
                 R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_1', '1');
         )",
-                kTableName
-        ));
+                kTableName));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
@@ -67,8 +65,7 @@ INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29
                 R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_2', '2');
         )",
-                kTableName
-        ));
+                kTableName));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
@@ -79,8 +76,7 @@ INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29
                 R"(
 INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29313A5FF_3', '3');
         )",
-                kTableName
-        ));
+                kTableName));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
@@ -91,8 +87,7 @@ INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29
                 R"(
     SELECT * FROM {};
             )",
-                kTableName
-        ));
+                kTableName));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsCount(), 3);
@@ -116,8 +111,7 @@ INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29
 UPDATE {}
 SET `event_body` = '4';
         )",
-                kTableName
-        ));
+                kTableName));
         EXPECT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 3);
