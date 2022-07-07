@@ -2,9 +2,6 @@
 
 #include <string>
 
-#include "ormxx/options/field_options.h"
-#include "ormxx/options/key_options.h"
-#include "ormxx/options/table_options.h"
 #include "ormxx/ormxx.h"
 
 namespace ormxx::test::model {

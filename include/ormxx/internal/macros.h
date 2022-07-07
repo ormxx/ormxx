@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <functional>
 #include <string>
+#include <unordered_map>
+#include <utility>
 
 #include "../options/field_options.h"
 #include "../options/key_options.h"
@@ -16,10 +18,21 @@
 #include "../types_check/is_visit_key_func.h"
 #include "./create_entrance_field_options.h"
 #include "./inject_entrance.h"
+#include "./macros_utility.h"
 #include "./struct_schema_entrance_options.h"
 #include "./utils.h"
 
-#define ORMXX_STR(x) #x
+#define ORMXX_STRUCT_SCHEMA_DECLARE_SET_AND_GET_FUNCTION(Struct, Field) \
+public:                                                                 \
+    Struct& SetField(decltype(Struct::Field) value) {                   \
+        __ORMXX_GetIsSetMap()[ORMXX_STR(Field)] = true;                 \
+        this->Field = std::move(value);                                 \
+        return *this;                                                   \
+    }                                                                   \
+                                                                        \
+    const decltype(Struct::Field)& GetField() const {                   \
+        return this->Field;                                             \
+    }
 
 #define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                          \
 private:                                                                                        \
@@ -31,7 +44,12 @@ private:                                                                        
                                                                                                 \
     using __ORMXX_Struct = Struct;                                                              \
     inline static const std::string __ORMXX_Struct_Name =                                       \
-            ::ormxx::internal::Utils::GetOriginStructName(ORMXX_STR(Struct));                   \
+            ::ormxx::internal::Utils::GetOriginStructName(__ORMXX_STR(Struct));                 \
+                                                                                                \
+    auto& __ORMXX_GetIsSetMap() {                                                               \
+        static std::unordered_map<std::string, bool> is_set_map;                                \
+        return is_set_map;                                                                      \
+    }                                                                                           \
                                                                                                 \
     template <typename T,                                                                       \
               std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,    \
@@ -46,7 +64,7 @@ private:                                                                        
         if (options.visit_field) {                                                                       \
             ++size;                                                                                      \
                                                                                                          \
-            const char* origin_field_name = ORMXX_STR(field);                                            \
+            const char* origin_field_name = __ORMXX_STR(field);                                          \
             static const auto field_options = ::ormxx::internal::CreateEntranceFieldOptions(             \
                     s, &(s->field), &_Struct::field, origin_field_name, ##__VA_ARGS__);                  \
                                                                                                          \

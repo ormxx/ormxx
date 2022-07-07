@@ -38,6 +38,11 @@ public:
                     "T does not have T::__ORMXX_StructSchemaEntrance() member function or __ORMXXExternal_StructSchemaEntrance() external function");
         }
     }
+
+    template <typename T>
+    static auto& GetIsSetMap(T* t) {
+        return t->__ORMXX_GetIsSetMap();
+    }
 };
 
 }  // namespace ormxx::internal
