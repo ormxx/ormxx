@@ -233,6 +233,11 @@ public:
         return execute_res;
     }
 
+    template <typename T>
+    ResultOr<std::unique_ptr<ExecuteResult>> Update(T t) {
+        return Update(&t);
+    }
+
 private:
     ResultOr<Connection*> getConnection(ConnectionType connection_type = ConnectionType::WRITE) {
         auto& node = connection_pool_node_map_[connection_type];
