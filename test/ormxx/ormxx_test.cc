@@ -260,4 +260,9 @@ TEST_F(ORMXXTest, update_test) {
             EXPECT_TRUE(res.IsOK());
         }
     }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
 }
