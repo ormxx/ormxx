@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "./interface/execute_result.h"       // IWYU pragma: export
 #include "./interface/index.h"                // IWYU pragma: export
 #include "./internal/inject_utility.h"        // IWYU pragma: export
 #include "./internal/macros.h"                // IWYU pragma: export
@@ -17,7 +18,6 @@
 #include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
 #include "./sql/generate_insert_sql.h"        // IWYU pragma: export
 #include "./sql/generate_update_sql.h"        // IWYU pragma: export
-#include "ormxx/interface/execute_result.h"
 
 namespace ormxx {
 
