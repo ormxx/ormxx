@@ -13,6 +13,7 @@ struct StructSchemaEntranceOptions {
     bool visit_for_each{false};
     bool visit_field_by_index{false};
     bool visit_field_by_name{false};
+    bool visit_field_by_is_set{false};
     bool visit_key_by_key_type{false};
 
     size_t index{0};
@@ -36,6 +37,11 @@ public:
 
     StructSchemaEntranceOptionsBuilder& WithVisitForEach(bool visit_for_each = true) {
         options_.visit_for_each = visit_for_each;
+        return *this;
+    }
+
+    StructSchemaEntranceOptionsBuilder& WithVisitFieldByIsSet(bool visit_field_by_is_set = true) {
+        options_.visit_field_by_is_set = visit_field_by_is_set;
         return *this;
     }
 

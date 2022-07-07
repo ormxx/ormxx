@@ -217,3 +217,47 @@ TEST_F(ORMXXTest, delete_test) {
         EXPECT_TRUE(res.IsOK());
     }
 }
+
+TEST_F(ORMXXTest, update_test) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto user = model::User().SetID(1).SetName("test").SetAge(1);
+        auto insert_res = orm->Insert(&user);
+        EXPECT_TRUE(insert_res.IsOK());
+
+        {
+            user.SetName("test2");
+
+            auto sql_res = GenerateUpdateSQL(&user);
+            EXPECT_TRUE(sql_res.IsOK());
+            auto sql = sql_res.Value();
+            EXPECT_EQ(sql, std::string(R"(UPDATE `user` SET `name` = 'test2' WHERE `id` = 1;)"));
+
+            auto res = orm->Update(&user);
+            EXPECT_TRUE(res.IsOK());
+        }
+
+        {
+            user.SetName("test3");
+
+            auto sql_res = GenerateUpdateSQL(&user);
+            EXPECT_TRUE(sql_res.IsOK());
+            auto sql = sql_res.Value();
+            EXPECT_EQ(sql, std::string(R"(UPDATE `user` SET `name` = 'test3' WHERE `id` = 1;)"));
+
+            auto res = orm->Update(&user);
+            EXPECT_TRUE(res.IsOK());
+        }
+    }
+}

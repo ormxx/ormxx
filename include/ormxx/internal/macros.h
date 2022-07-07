@@ -76,7 +76,9 @@ private:                                                                        
                     s, &(s->field), &_Struct::field, origin_field_name, ##__VA_ARGS__);                  \
                                                                                                          \
             if (options.visit_for_each || (options.visit_field_by_index && options.index + 1 == size) || \
-                (options.visit_field_by_name && origin_field_name == options.name)) {                    \
+                (options.visit_field_by_name && origin_field_name == options.name) ||                    \
+                (options.visit_field_by_is_set && s->is_set_map.count(origin_field_name) &&              \
+                 s->is_set_map.at(origin_field_name))) {                                                 \
                 func(&(s->field), field_options);                                                        \
             }                                                                                            \
         }                                                                                                \

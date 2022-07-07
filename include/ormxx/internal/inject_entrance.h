@@ -6,6 +6,7 @@
 #include "../types_check/has_ormxx_external_get_table_options.h"
 #include "../types_check/has_ormxx_external_struct_schema_entrance.h"
 #include "../types_check/has_ormxx_get_table_options.h"
+#include "../types_check/has_ormxx_inject.h"
 #include "../types_check/has_ormxx_struct_schema_entrance.h"
 #include "./struct_schema_entrance_options.h"
 
@@ -39,7 +40,7 @@ public:
         }
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<has_ormxx_inject_v<T>, bool> = true>
     static auto& GetIsSetMap(T* t) {
         return t->__ORMXX_GetIsSetMap();
     }

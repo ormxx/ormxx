@@ -5,15 +5,19 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <type_traits>
 #include <unordered_map>
 
 #include "./interface/index.h"                // IWYU pragma: export
+#include "./internal/inject_utility.h"        // IWYU pragma: export
 #include "./internal/macros.h"                // IWYU pragma: export
 #include "./options/index.h"                  // IWYU pragma: export
 #include "./sql/generate_create_table_sql.h"  // IWYU pragma: export
 #include "./sql/generate_delete_sql.h"        // IWYU pragma: export
 #include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
 #include "./sql/generate_insert_sql.h"        // IWYU pragma: export
+#include "./sql/generate_update_sql.h"        // IWYU pragma: export
+#include "ormxx/interface/execute_result.h"
 
 namespace ormxx {
 
@@ -145,8 +149,44 @@ public:
         return Execute(sql_res.Value());
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(T* t) {
+        auto sql_res = GenerateInsertSQL(t);
+        if (!sql_res.IsOK()) {
+            return sql_res;
+        }
+
+        auto execute_res = ExecuteUpdate(sql_res.Value());
+
+        if constexpr (!std::is_const_v<T>) {
+            if (execute_res.IsOK()) {
+                internal::InjectUtility::ClearIsSetMap(t);
+            }
+        }
+
+        return execute_res;
+    }
+
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+    ResultOr<std::unique_ptr<ExecuteResult>> Insert(std::vector<T>* t) {
+        auto sql_res = GenerateInsertSQL(t);
+        if (!sql_res.IsOK()) {
+            return sql_res;
+        }
+
+        auto execute_res = ExecuteUpdate(sql_res.Value());
+
+        if (execute_res.IsOK()) {
+            for (auto& _t : *t) {
+                internal::InjectUtility::ClearIsSetMap(&_t);
+            }
+        }
+
+        return execute_res;
+    }
+
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+    ResultOr<std::unique_ptr<ExecuteResult>> Insert(const std::vector<T>* t) {
         auto sql_res = GenerateInsertSQL(t);
         if (!sql_res.IsOK()) {
             return sql_res;
@@ -173,6 +213,24 @@ public:
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Delete(T t) {
         return Delete(&t);
+    }
+
+    template <typename T>
+    ResultOr<std::unique_ptr<ExecuteResult>> Update(T* t) {
+        auto sql_res = GenerateUpdateSQL(t);
+        if (!sql_res.IsOK()) {
+            return sql_res;
+        }
+
+        auto execute_res = ExecuteUpdate(sql_res.Value());
+
+        if constexpr (!std::is_const_v<T>) {
+            if (execute_res.IsOK()) {
+                internal::InjectUtility::ClearIsSetMap(t);
+            }
+        }
+
+        return execute_res;
     }
 
 private:
