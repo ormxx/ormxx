@@ -16,7 +16,7 @@ struct StructSchemaEntranceOptions {
     bool visit_key_by_key_type{false};
 
     size_t index{0};
-    const char* name{nullptr};
+    std::string name{""};
     KeyOptions::KeyType key_type{KeyOptions::KeyType::PRIMARY};
 };
 
@@ -45,7 +45,7 @@ public:
         return *this;
     }
 
-    StructSchemaEntranceOptionsBuilder& WithVisitFieldByName(const char* name) {
+    StructSchemaEntranceOptionsBuilder& WithVisitFieldByName(const std::string& name) {
         options_.visit_field_by_name = true;
         options_.name = name;
         return *this;
@@ -62,7 +62,7 @@ public:
         return *this;
     }
 
-    StructSchemaEntranceOptionsBuilder& WithName(const char* name) {
+    StructSchemaEntranceOptionsBuilder& WithName(const std::string& name) {
         options_.name = name;
         return *this;
     }

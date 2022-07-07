@@ -71,12 +71,12 @@ private:                                                                        
         if (options.visit_field) {                                                                       \
             ++size;                                                                                      \
                                                                                                          \
-            const char* origin_field_name = __ORMXX_STR(field);                                          \
+            const std::string origin_field_name = std::string(__ORMXX_STR(field));                       \
             static const auto field_options = ::ormxx::internal::CreateEntranceFieldOptions(             \
                     s, &(s->field), &_Struct::field, origin_field_name, ##__VA_ARGS__);                  \
                                                                                                          \
             if (options.visit_for_each || (options.visit_field_by_index && options.index + 1 == size) || \
-                (options.visit_field_by_name && !strcmp(origin_field_name, options.name))) {             \
+                (options.visit_field_by_name && origin_field_name == options.name)) {                    \
                 func(&(s->field), field_options);                                                        \
             }                                                                                            \
         }                                                                                                \

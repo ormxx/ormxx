@@ -11,6 +11,7 @@
 #include "./internal/macros.h"                // IWYU pragma: export
 #include "./options/index.h"                  // IWYU pragma: export
 #include "./sql/generate_create_table_sql.h"  // IWYU pragma: export
+#include "./sql/generate_delete_sql.h"        // IWYU pragma: export
 #include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
 #include "./sql/generate_insert_sql.h"        // IWYU pragma: export
 
@@ -157,6 +158,21 @@ public:
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(T t) {
         return Insert(&t);
+    }
+
+    template <typename T>
+    ResultOr<std::unique_ptr<ExecuteResult>> Delete(T* t) {
+        auto sql_res = GenerateDeleteSQL(t);
+        if (!sql_res.IsOK()) {
+            return sql_res;
+        }
+
+        return ExecuteUpdate(sql_res.Value());
+    }
+
+    template <typename T>
+    ResultOr<std::unique_ptr<ExecuteResult>> Delete(T t) {
+        return Delete(&t);
     }
 
 private:

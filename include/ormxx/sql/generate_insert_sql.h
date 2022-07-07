@@ -1,5 +1,5 @@
-#ifndef ORMXX_SQL_GENERATE_INSERT_H
-#define ORMXX_SQL_GENERATE_INSERT_H
+#ifndef ORMXX_SQL_GENERATE_INSERT_SQL_H
+#define ORMXX_SQL_GENERATE_INSERT_SQL_H
 
 #include <string>
 #include <vector>
@@ -123,4 +123,4 @@ ResultOr<std::string> GenerateInsertSQL(std::vector<T>* t_vector) {
 
 }  // namespace ormxx
 
-#endif  // ORMXX_SQL_GENERATE_INSERT_H
+#endif  // ORMXX_SQL_GENERATE_INSERT_SQL_H
