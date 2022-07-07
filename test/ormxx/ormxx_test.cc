@@ -102,8 +102,7 @@ TEST_F(ORMXXTest, insert_test) {
 
     {
         model::User user;
-        user.Name = "test";
-        user.Age = 1;
+        user.SetName("test").SetAge(1);
 
         auto sql_res = GenerateInsertSQL(&user);
         EXPECT_TRUE(sql_res.IsOK());
@@ -150,6 +149,15 @@ TEST_F(ORMXXTest, insert_test) {
     }
 
     {
+        auto res = orm->Insert<model::User>(model::User().SetName("name2").SetAge(4));
+
+        EXPECT_TRUE(res.IsOK());
+
+        auto execute_res = std::move(res.Value());
+        EXPECT_EQ(execute_res->RowsAffected(), 1);
+    }
+
+    {
         std::vector<model::User> user_vector;
         for (int i = 4; i <= 10; i++) {
             user_vector.push_back(model::User{
@@ -179,8 +187,8 @@ TEST_F(ORMXXTest, insert_test) {
         EXPECT_EQ(execute_res->RowsAffected(), 7);
     }
 
-    {
-        auto res = orm->DropTable<model::User>();
-        EXPECT_TRUE(res.IsOK());
-    }
+    // {
+    //     auto res = orm->DropTable<model::User>();
+    //     EXPECT_TRUE(res.IsOK());
+    // }
 }

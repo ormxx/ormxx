@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "ormxx/internal/macros.h"
 #include "ormxx/internal/macros_utility.h"
 
 class MacrosUtilityTest : public testing::Test {
@@ -12,7 +13,7 @@ protected:
     virtual void TearDown() override {}
 };
 
-TEST_F(MacrosUtilityTest, _ORMXX_UTILS_NARGS_) {
+TEST_F(MacrosUtilityTest, ormxx_nargs) {
     EXPECT_EQ(__ORMXX_NARGS_(1), 1);
     EXPECT_EQ(__ORMXX_NARGS_(1, 2, 3), 3);
 

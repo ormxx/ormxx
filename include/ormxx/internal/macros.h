@@ -22,15 +22,15 @@
 #include "./struct_schema_entrance_options.h"
 #include "./utils.h"
 
-#define ORMXX_STRUCT_SCHEMA_DECLARE_SET_AND_GET_FUNCTION(Struct, Field) \
+#define __ORMXX_STRUCT_SCHEMA_DECLARE_SET_AND_GET_FUNCTION(Field)       \
 public:                                                                 \
-    Struct& SetField(decltype(Struct::Field) value) {                   \
-        __ORMXX_GetIsSetMap()[ORMXX_STR(Field)] = true;                 \
+    __ORMXX_Struct& Set##Field(decltype(__ORMXX_Struct::Field) value) { \
+        __ORMXX_GetIsSetMap()[__ORMXX_STR(Field)] = true;               \
         this->Field = std::move(value);                                 \
         return *this;                                                   \
     }                                                                   \
                                                                         \
-    const decltype(Struct::Field)& GetField() const {                   \
+    const decltype(__ORMXX_Struct::Field)& Get##Field() const {         \
         return this->Field;                                             \
     }
 
@@ -50,6 +50,8 @@ private:                                                                        
         static std::unordered_map<std::string, bool> is_set_map;                                \
         return is_set_map;                                                                      \
     }                                                                                           \
+                                                                                                \
+    __ORMXX_EXPEND_FUNC_(__ORMXX_STRUCT_SCHEMA_DECLARE_SET_AND_GET_FUNCTION, __VA_ARGS__)       \
                                                                                                 \
     template <typename T,                                                                       \
               std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,    \
