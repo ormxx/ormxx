@@ -13,7 +13,6 @@ protected:
 };
 
 TEST_F(MacrosUtilityTest, _ORMXX_UTILS_NARGS_) {
-    EXPECT_EQ(__ORMXX_NARGS_(), 1);
     EXPECT_EQ(__ORMXX_NARGS_(1), 1);
     EXPECT_EQ(__ORMXX_NARGS_(1, 2, 3), 3);
 
