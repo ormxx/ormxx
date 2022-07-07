@@ -27,7 +27,7 @@ inline std::string FieldToString(const T* s) {
 }
 
 template <typename T,
-          std::enable_if_t<has_std_to_string_v<T> || std::is_same_v<bool, std::remove_cv_t<T>> ||
+          std::enable_if_t<has_std_to_string_v<std::remove_cv_t<T>> || std::is_same_v<bool, std::remove_cv_t<T>> ||
                                    std::is_same_v<std::string, std::remove_cv_t<T>>,
                            bool> = true>
 inline std::string FieldToString(const std::optional<T>* t) {
@@ -39,11 +39,11 @@ inline std::string FieldToString(const std::optional<T>* t) {
 }
 
 template <typename T,
-          std::enable_if_t<has_std_to_string_v<T> || std::is_same_v<bool, std::remove_cv_t<T>> ||
+          std::enable_if_t<has_std_to_string_v<std::remove_cv_t<T>> || std::is_same_v<bool, std::remove_cv_t<T>> ||
                                    std::is_same_v<std::string, std::remove_cv_t<T>>,
                            bool> = true>
 inline std::string FieldToString(std::optional<T>* t) {
-    return static_cast<const std::optional<T>*>(t);
+    return FieldToString(static_cast<const std::optional<T>*>(t));
 }
 
 }  // namespace ormxx::internal
