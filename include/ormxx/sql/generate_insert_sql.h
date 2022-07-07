@@ -19,7 +19,7 @@ namespace internal {
 
 class GenerateInsertSQLUtility {
 public:
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     static std::tuple<std::string, std::string> GetFieldNameAndValue(T* t) {
         const auto& is_set_map = InjectEntrance::GetIsSetMap(t);
 

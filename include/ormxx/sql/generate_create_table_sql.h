@@ -12,10 +12,11 @@
 #include "../internal/struct_schema_entrance_options.h"
 #include "../options/key_options.h"
 #include "../options/table_options.h"
+#include "../types_check/has_ormxx_inject.h"
 
 namespace ormxx {
 
-template <typename T>
+template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
 ResultOr<std::string> GenerateCreateTableSQL() {
     const T t = T{};
     const auto table_options = internal::InjectEntrance::GetTableOptions(&t);
