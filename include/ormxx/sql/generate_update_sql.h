@@ -7,7 +7,7 @@
 
 namespace ormxx {
 
-template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T> && !std::is_const_v<T>, bool> = true>
+template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
 ResultOr<std::string> GenerateUpdateSQL(T* t) {
     auto primary_key_filed_name_res = internal::InjectUtility::GetPrimaryKeyFieldName<T>();
     if (!primary_key_filed_name_res.IsOK()) {
