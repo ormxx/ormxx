@@ -9,6 +9,7 @@
 #include "../interface/result.h"
 #include "../internal/field_to_string.h"
 #include "../internal/inject_entrance.h"
+#include "../internal/inject_utility.h"
 #include "../internal/struct_schema_entrance_options.h"
 #include "../types_check/has_ormxx_inject.h"
 
@@ -20,13 +21,18 @@ class GenerateInsertSQLUtility {
 public:
     template <typename T>
     static std::tuple<std::string, std::string> GetFieldNameAndValue(T* t) {
+        const auto& is_set_map = InjectEntrance::GetIsSetMap(t);
+
         std::string field_name_sql_string = "";
         std::string field_value_sql_string = "";
 
         auto options = internal::StructSchemaEntranceOptionsBuilder().WithVisitField().WithVisitForEach().Build();
         internal::InjectEntrance::StructSchemaEntrance(
-                t, options, [&field_name_sql_string, &field_value_sql_string](auto&& field, auto&& options) {
-                    if (options.auto_increment) {
+                t,
+                options,
+                [&is_set_map, &field_name_sql_string, &field_value_sql_string](auto&& field, auto&& options) {
+                    if (!is_set_map.count(options.origin_field_name) ||
+                        is_set_map.at(options.origin_field_name) == false) {
                         return;
                     }
 

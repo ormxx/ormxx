@@ -101,8 +101,7 @@ TEST_F(ORMXXTest, insert_test) {
     }
 
     {
-        model::User user;
-        user.SetName("test").SetAge(1);
+        auto user = model::User().SetName("test").SetAge(1);
 
         auto sql_res = GenerateInsertSQL(&user);
         EXPECT_TRUE(sql_res.IsOK());
@@ -117,11 +116,7 @@ TEST_F(ORMXXTest, insert_test) {
     }
 
     {
-        const auto user = model::User{
-                .ID = 1,
-                .Name = "test",
-                .Age = 2,
-        };
+        const auto user = model::User().SetName("test").SetAge(2);
 
         auto sql_res = GenerateInsertSQL(&user);
         EXPECT_TRUE(sql_res.IsOK());
@@ -136,21 +131,7 @@ TEST_F(ORMXXTest, insert_test) {
     }
 
     {
-        auto res = orm->Insert<model::User>(model::User{
-                .ID = 1,
-                .Name = "name1",
-                .Age = 3,
-        });
-
-        EXPECT_TRUE(res.IsOK());
-
-        auto execute_res = std::move(res.Value());
-        EXPECT_EQ(execute_res->RowsAffected(), 1);
-    }
-
-    {
-        auto res = orm->Insert<model::User>(model::User().SetName("name2").SetAge(4));
-
+        auto res = orm->Insert<model::User>(model::User().SetName("name1").SetAge(3));
         EXPECT_TRUE(res.IsOK());
 
         auto execute_res = std::move(res.Value());
@@ -160,11 +141,7 @@ TEST_F(ORMXXTest, insert_test) {
     {
         std::vector<model::User> user_vector;
         for (int i = 4; i <= 10; i++) {
-            user_vector.push_back(model::User{
-                    .ID = i,
-                    .Name = fmt::format("name{}", i),
-                    .Age = i,
-            });
+            user_vector.push_back(model::User().SetName(fmt::format("name{}", i)).SetAge(i));
         }
 
         auto sql_res = GenerateInsertSQL(&user_vector);
@@ -187,8 +164,23 @@ TEST_F(ORMXXTest, insert_test) {
         EXPECT_EQ(execute_res->RowsAffected(), 7);
     }
 
-    // {
-    //     auto res = orm->DropTable<model::User>();
-    //     EXPECT_TRUE(res.IsOK());
-    // }
+    {
+        auto user = model::User().SetID(999).SetName("dd").SetAge(10);
+
+        auto sql_res = GenerateInsertSQL(&user);
+        EXPECT_TRUE(sql_res.IsOK());
+        auto sql = sql_res.Value();
+        EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`id`, `name`, `age`) VALUES (999, 'dd', 10);)"));
+
+        auto res = orm->Insert(&user);
+        EXPECT_TRUE(res.IsOK());
+
+        auto execute_res = std::move(res.Value());
+        EXPECT_EQ(execute_res->RowsAffected(), 1);
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
 }

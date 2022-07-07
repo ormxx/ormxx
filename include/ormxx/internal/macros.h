@@ -46,8 +46,13 @@ private:                                                                        
     inline static const std::string __ORMXX_Struct_Name =                                       \
             ::ormxx::internal::Utils::GetOriginStructName(__ORMXX_STR(Struct));                 \
                                                                                                 \
+    std::unordered_map<std::string, bool> is_set_map;                                           \
+                                                                                                \
     auto& __ORMXX_GetIsSetMap() {                                                               \
-        static std::unordered_map<std::string, bool> is_set_map;                                \
+        return is_set_map;                                                                      \
+    }                                                                                           \
+                                                                                                \
+    const auto& __ORMXX_GetIsSetMap() const {                                                   \
         return is_set_map;                                                                      \
     }                                                                                           \
                                                                                                 \
