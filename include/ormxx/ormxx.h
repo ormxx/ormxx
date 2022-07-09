@@ -18,6 +18,7 @@
 #include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
 #include "./sql/generate_insert_sql.h"        // IWYU pragma: export
 #include "./sql/generate_update_sql.h"        // IWYU pragma: export
+#include "result/macros.h"
 
 namespace ormxx {
 
@@ -81,12 +82,8 @@ public:
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) {
-        auto conn_res = getWriteConnection();
-        if (!conn_res.IsOK()) {
-            return conn_res;
-        }
+        RESULT_VALUE_OR_RETURN(*conn, getWriteConnection());
 
-        auto* conn = conn_res.Value();
         auto res = conn->Execute(sql);
         releaseWriteConnection(conn);
 
@@ -94,12 +91,8 @@ public:
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) {
-        auto conn_res = getReadConnection();
-        if (!conn_res.IsOK()) {
-            return conn_res;
-        }
+        RESULT_VALUE_OR_RETURN(*conn, getReadConnection());
 
-        auto* conn = conn_res.Value();
         auto res = conn->ExecuteQuery(sql);
         releaseReadConnection(conn);
 
@@ -107,12 +100,8 @@ public:
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) {
-        auto conn_res = getWriteConnection();
-        if (!conn_res.IsOK()) {
-            return conn_res;
-        }
+        RESULT_VALUE_OR_RETURN(*conn, getWriteConnection());
 
-        auto* conn = conn_res.Value();
         auto res = conn->ExecuteUpdate(sql);
         releaseWriteConnection(conn);
 
@@ -121,47 +110,28 @@ public:
 
     template <typename T>
     Result CheckSchema() {
-        auto sql_res = GenerateCreateTableSQL<T>();
-        if (!sql_res.IsOK()) {
-            return sql_res;
-        }
-
-        return Result::Builder(Result::ErrorCode::OK).Build();
+        return GenerateCreateTableSQL<T>();
     }
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> DropTable() {
-        auto sql_res = GenerateDropTableSQL<T>();
-        if (!sql_res.IsOK()) {
-            return sql_res;
-        }
-
-        return Execute(sql_res.Value());
+        RESULT_VALUE_OR_RETURN(const sql, GenerateDropTableSQL<T>());
+        return Execute(sql);
     }
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> CreateTable() {
-        auto sql_res = GenerateCreateTableSQL<T>();
-        if (!sql_res.IsOK()) {
-            return sql_res;
-        }
-
-        return Execute(sql_res.Value());
+        RESULT_VALUE_OR_RETURN(const sql, GenerateCreateTableSQL<T>());
+        return Execute(sql);
     }
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(T* t) {
-        auto sql_res = GenerateInsertSQL(t);
-        if (!sql_res.IsOK()) {
-            return sql_res;
-        }
-
-        auto execute_res = ExecuteUpdate(sql_res.Value());
+        RESULT_VALUE_OR_RETURN(const sql, GenerateInsertSQL<T>(t));
+        RESULT_VALUE_OR_RETURN(execute_res, ExecuteUpdate(sql));
 
         if constexpr (!std::is_const_v<T>) {
-            if (execute_res.IsOK()) {
-                internal::InjectUtility::ClearIsSetMap(t);
-            }
+            internal::InjectUtility::ClearIsSetMap(t);
         }
 
         return execute_res;
@@ -169,17 +139,11 @@ public:
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(std::vector<T>* t) {
-        auto sql_res = GenerateInsertSQL(t);
-        if (!sql_res.IsOK()) {
-            return sql_res;
-        }
+        RESULT_VALUE_OR_RETURN(const sql, GenerateInsertSQL<T>(t));
+        RESULT_VALUE_OR_RETURN(execute_res, ExecuteUpdate(sql));
 
-        auto execute_res = ExecuteUpdate(sql_res.Value());
-
-        if (execute_res.IsOK()) {
-            for (auto& _t : *t) {
-                internal::InjectUtility::ClearIsSetMap(&_t);
-            }
+        for (auto& _t : *t) {
+            internal::InjectUtility::ClearIsSetMap(&_t);
         }
 
         return execute_res;
@@ -187,12 +151,8 @@ public:
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(const std::vector<T>* t) {
-        auto sql_res = GenerateInsertSQL(t);
-        if (!sql_res.IsOK()) {
-            return sql_res;
-        }
-
-        return ExecuteUpdate(sql_res.Value());
+        RESULT_VALUE_OR_RETURN(const sql, GenerateInsertSQL<T>(t));
+        return ExecuteUpdate(sql);
     }
 
     template <typename T>
@@ -202,12 +162,8 @@ public:
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Delete(T* t) {
-        auto sql_res = GenerateDeleteSQL(t);
-        if (!sql_res.IsOK()) {
-            return sql_res;
-        }
-
-        return ExecuteUpdate(sql_res.Value());
+        RESULT_VALUE_OR_RETURN(const sql, GenerateDeleteSQL<T>(t));
+        return ExecuteUpdate(sql);
     }
 
     template <typename T>
@@ -217,17 +173,11 @@ public:
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Update(T* t) {
-        auto sql_res = GenerateUpdateSQL(t);
-        if (!sql_res.IsOK()) {
-            return sql_res;
-        }
-
-        auto execute_res = ExecuteUpdate(sql_res.Value());
+        RESULT_VALUE_OR_RETURN(const sql, GenerateUpdateSQL<T>(t));
+        RESULT_VALUE_OR_RETURN(execute_res, ExecuteUpdate(sql));
 
         if constexpr (!std::is_const_v<T>) {
-            if (execute_res.IsOK()) {
-                internal::InjectUtility::ClearIsSetMap(t);
-            }
+            internal::InjectUtility::ClearIsSetMap(t);
         }
 
         return execute_res;
