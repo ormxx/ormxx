@@ -8,6 +8,8 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "./internal/defer.h"
+
 #include "./interface/execute_result.h"       // IWYU pragma: export
 #include "./interface/index.h"                // IWYU pragma: export
 #include "./internal/inject_utility.h"        // IWYU pragma: export
@@ -18,6 +20,7 @@
 #include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
 #include "./sql/generate_insert_sql.h"        // IWYU pragma: export
 #include "./sql/generate_update_sql.h"        // IWYU pragma: export
+#include "ormxx/interface/connection.h"
 #include "result/macros.h"
 
 namespace ormxx {
@@ -82,47 +85,59 @@ public:
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) {
+        if (conn_ != nullptr) {
+            RESULT_DIRECT_RETURN(conn_->Execute(sql));
+        }
+
         RESULT_VALUE_OR_RETURN(*conn, getWriteConnection());
+        __ORMXX_DEFER([&conn, this]() {
+            releaseWriteConnection(conn);
+        });
 
-        auto res = conn->Execute(sql);
-        releaseWriteConnection(conn);
-
-        return res;
+        RESULT_DIRECT_RETURN(conn->Execute(sql));
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) {
+        if (conn_ != nullptr) {
+            RESULT_DIRECT_RETURN(conn_->ExecuteQuery(sql));
+        }
+
         RESULT_VALUE_OR_RETURN(*conn, getReadConnection());
+        __ORMXX_DEFER([&conn, this]() {
+            releaseReadConnection(conn);
+        });
 
-        auto res = conn->ExecuteQuery(sql);
-        releaseReadConnection(conn);
-
-        return res;
+        RESULT_DIRECT_RETURN(conn->ExecuteQuery(sql));
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) {
+        if (conn_ != nullptr) {
+            RESULT_DIRECT_RETURN(conn_->ExecuteUpdate(sql));
+        }
+
         RESULT_VALUE_OR_RETURN(*conn, getWriteConnection());
+        __ORMXX_DEFER([&conn, this]() {
+            releaseWriteConnection(conn);
+        });
 
-        auto res = conn->ExecuteUpdate(sql);
-        releaseWriteConnection(conn);
-
-        return res;
+        RESULT_DIRECT_RETURN(conn->ExecuteUpdate(sql));
     }
 
     template <typename T>
     Result CheckSchema() {
-        return GenerateCreateTableSQL<T>();
+        RESULT_DIRECT_RETURN(GenerateCreateTableSQL<T>());
     }
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> DropTable() {
         RESULT_VALUE_OR_RETURN(const sql, GenerateDropTableSQL<T>());
-        return Execute(sql);
+        RESULT_DIRECT_RETURN(Execute(sql));
     }
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> CreateTable() {
         RESULT_VALUE_OR_RETURN(const sql, GenerateCreateTableSQL<T>());
-        return Execute(sql);
+        RESULT_DIRECT_RETURN(Execute(sql));
     }
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
@@ -152,23 +167,23 @@ public:
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(const std::vector<T>* t) {
         RESULT_VALUE_OR_RETURN(const sql, GenerateInsertSQL<T>(t));
-        return ExecuteUpdate(sql);
+        RESULT_DIRECT_RETURN(ExecuteUpdate(sql));
     }
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(T t) {
-        return Insert(&t);
+        RESULT_DIRECT_RETURN(Insert(&t));
     }
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Delete(T* t) {
         RESULT_VALUE_OR_RETURN(const sql, GenerateDeleteSQL<T>(t));
-        return ExecuteUpdate(sql);
+        RESULT_DIRECT_RETURN(ExecuteUpdate(sql));
     }
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Delete(T t) {
-        return Delete(&t);
+        RESULT_DIRECT_RETURN(Delete(&t));
     }
 
     template <typename T>
@@ -185,7 +200,27 @@ public:
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Update(T t) {
-        return Update(&t);
+        RESULT_DIRECT_RETURN(Update(&t));
+    }
+
+    template <typename Func>
+    Result Transaction(Func func) {
+        RESULT_VALUE_OR_RETURN(*conn, getWriteConnection());
+        __ORMXX_DEFER([&conn, this]() {
+            releaseWriteConnection(conn);
+        });
+
+        conn_ = conn;
+
+        RESULT_OK_OR_RETURN(conn_->BeginTransaction());
+
+        auto res = func();
+        if (!res.IsOK()) {
+            conn_->Rollback();
+            return res;
+        }
+
+        RESULT_DIRECT_RETURN(conn_->Commit());
     }
 
 private:
@@ -237,6 +272,8 @@ private:
     Adaptor* adaptor_;
 
     Options options_;
+
+    inline static thread_local Connection* conn_ = nullptr;
 };
 
 }  // namespace ormxx

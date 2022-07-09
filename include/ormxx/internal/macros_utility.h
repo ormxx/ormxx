@@ -2,6 +2,8 @@
 #define ORMXX_INTERNAL_MACROS_UTILITY_H
 
 #define __ORMXX_STR(x) #x
+#define __ORMXX_CONCAT(x, y) __ORMXX_CONCAT_(x, y)
+#define __ORMXX_CONCAT_(x, y) x##y
 
 #define __ORMXX_NARGS_(...) __ORMXX_NARGS__(__VA_ARGS__)
 #define __ORMXX_NARGS__(...) __ORMXX_NARGS___(__VA_ARGS__)

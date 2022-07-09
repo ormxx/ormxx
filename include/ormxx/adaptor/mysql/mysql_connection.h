@@ -55,6 +55,42 @@ public:
         }
     }
 
+    Result BeginTransaction() override {
+        try {
+            pre_auto_commit_value = connection_->getAutoCommit();
+            connection_->setAutoCommit(false);
+            return Result::Builder(Result::ErrorCode::OK).Build();
+        } catch (std::exception& e) {
+            return Result::Builder(Result::ErrorCode::ExecuteError)
+                    .WithErrorMessage(fmt::format("MySQL Begin Transaction failed. [err={}]", e.what()))
+                    .Build();
+        }
+    }
+
+    Result Commit() override {
+        try {
+            connection_->commit();
+            connection_->setAutoCommit(pre_auto_commit_value);
+            return Result::Builder(Result::ErrorCode::OK).Build();
+        } catch (std::exception& e) {
+            return Result::Builder(Result::ErrorCode::ExecuteError)
+                    .WithErrorMessage(fmt::format("MySQL Commit failed. [err={}]", e.what()))
+                    .Build();
+        }
+    }
+
+    virtual Result Rollback() override {
+        try {
+            connection_->rollback();
+            connection_->setAutoCommit(pre_auto_commit_value);
+            return Result::Builder(Result::ErrorCode::OK).Build();
+        } catch (std::exception& e) {
+            return Result::Builder(Result::ErrorCode::ExecuteError)
+                    .WithErrorMessage(fmt::format("MySQL Rollback failed. [err={}]", e.what()))
+                    .Build();
+        }
+    }
+
     ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql, const std::string& schema) {
         try {
             if (!schema.empty()) {
@@ -69,7 +105,7 @@ public:
             return res;
         } catch (std::exception& e) {
             return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL Execute failed. [err={}, sql={}]", e.what(), sql))
+                    .WithErrorMessage(fmt::format("MySQL Execute failed. [err={}] [sql={}]", e.what(), sql))
                     .Build();
         }
     }
@@ -92,7 +128,7 @@ public:
             return res;
         } catch (std::exception& e) {
             return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL ExecuteQuery failed. [err={}, sql={}]", e.what(), sql))
+                    .WithErrorMessage(fmt::format("MySQL ExecuteQuery failed. [err={}] [sql={}]", e.what(), sql))
                     .Build();
         }
     }
@@ -115,7 +151,7 @@ public:
             return res;
         } catch (std::exception& e) {
             return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL ExecuteUpdate failed. [err={}, sql={}]", e.what(), sql))
+                    .WithErrorMessage(fmt::format("MySQL ExecuteUpdate failed. [err={}] [sql={}]", e.what(), sql))
                     .Build();
         }
     }
@@ -127,6 +163,8 @@ public:
 private:
     std::string schema_{""};
     sql::Connection* connection_{nullptr};
+
+    inline static thread_local bool pre_auto_commit_value = true;
 };
 
 }  // namespace ormxx::adaptor::mysql

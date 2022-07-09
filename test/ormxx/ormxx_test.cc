@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "result/macros.h"
 #include "snapshot/snapshot.h"
 
 #include "fmt/core.h"
@@ -259,6 +260,36 @@ TEST_F(ORMXXTest, update_test) {
             auto res = orm->Update(&user);
             EXPECT_TRUE(res.IsOK());
         }
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+}
+
+TEST_F(ORMXXTest, transaction_test) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->Transaction([&]() -> Result {
+            auto user = model::User().SetID(1).SetName("test").SetAge(1);
+            RESULT_OK_OR_RETURN(orm->Insert(&user));
+            user.SetAge(2);
+            RESULT_DIRECT_RETURN(orm->Update(&user));
+        });
+
+        EXPECT_TRUE(res.IsOK());
     }
 
     {
