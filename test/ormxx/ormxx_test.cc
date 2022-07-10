@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "result/macros.h"
 #include "snapshot/snapshot.h"
 
 #include "fmt/core.h"
