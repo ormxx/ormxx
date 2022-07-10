@@ -79,7 +79,7 @@ public:
         }
     }
 
-    virtual Result Rollback() override {
+    Result Rollback() override {
         try {
             connection_->rollback();
             connection_->setAutoCommit(pre_auto_commit_value);
