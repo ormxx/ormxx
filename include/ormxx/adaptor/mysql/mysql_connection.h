@@ -13,6 +13,7 @@
 #include "../../interface/execute_result.h"
 
 #include "./mysql_result.h"
+#include "result/macros.h"
 
 namespace ormxx::adaptor::mysql {
 
@@ -59,7 +60,7 @@ public:
         try {
             pre_auto_commit_value = connection_->getAutoCommit();
             connection_->setAutoCommit(false);
-            return Result::Builder(Result::ErrorCode::OK).Build();
+            RESULT_DIRECT_RETURN(Result::OK());
         } catch (std::exception& e) {
             return Result::Builder(Result::ErrorCode::ExecuteError)
                     .WithErrorMessage(fmt::format("MySQL Begin Transaction failed. [err={}]", e.what()))
@@ -71,7 +72,7 @@ public:
         try {
             connection_->commit();
             connection_->setAutoCommit(pre_auto_commit_value);
-            return Result::Builder(Result::ErrorCode::OK).Build();
+            RESULT_DIRECT_RETURN(Result::OK());
         } catch (std::exception& e) {
             return Result::Builder(Result::ErrorCode::ExecuteError)
                     .WithErrorMessage(fmt::format("MySQL Commit failed. [err={}]", e.what()))
@@ -83,7 +84,7 @@ public:
         try {
             connection_->rollback();
             connection_->setAutoCommit(pre_auto_commit_value);
-            return Result::Builder(Result::ErrorCode::OK).Build();
+            RESULT_DIRECT_RETURN(Result::OK());
         } catch (std::exception& e) {
             return Result::Builder(Result::ErrorCode::ExecuteError)
                     .WithErrorMessage(fmt::format("MySQL Rollback failed. [err={}]", e.what()))

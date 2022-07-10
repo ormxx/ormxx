@@ -34,7 +34,7 @@ TEST_F(MySQLClientTest, mysqlclient_test) {
         auto res = orm->Execute(fmt::format(
                 R"(
 CREATE TABLE {}  (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'incr id',
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'incr id',
   `main_uuid` varchar(64) NOT NULL COMMENT 'main uuid',
   `event_body` MEDIUMTEXT NOT NULL COMMENT 'event body',
   `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'created time',
@@ -92,14 +92,18 @@ INSERT INTO {} (`main_uuid`, `event_body`) VALUES ('176BED2B-1AB3-47C1-AF25-FA29
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsCount(), 3);
 
-        for (int i = 0; i < execute_res->RowsAffected(); i++) {
+        for (size_t i = 0; i < execute_res->RowsCount(); i++) {
             execute_res->Next();
 
+            uint64_t id = 0;
             std::string main_uuid = "";
             std::string event_body = "";
+
+            execute_res->AssignColumn(id, "id");
             execute_res->AssignColumn(main_uuid, "main_uuid");
             execute_res->AssignColumn(event_body, "event_body");
 
+            EXPECT_EQ(id, i + 1);
             EXPECT_EQ(main_uuid, fmt::format("176BED2B-1AB3-47C1-AF25-FA29313A5FF_{}", i + 1));
             EXPECT_EQ(event_body, fmt::format("{}", i + 1));
         }

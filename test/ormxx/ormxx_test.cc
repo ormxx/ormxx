@@ -268,6 +268,50 @@ TEST_F(ORMXXTest, update_test) {
     }
 }
 
+TEST_F(ORMXXTest, first_test) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto user = model::User().SetID(1).SetName("test").SetAge(1);
+        auto insert_res = orm->Insert(&user);
+        EXPECT_TRUE(insert_res.IsOK());
+    }
+
+    {
+        model::User user;
+        auto sql_res = GenerateSelectSQL(&user);
+        EXPECT_TRUE(sql_res.IsOK());
+        auto sql = sql_res.Value();
+        EXPECT_EQ(sql, std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age` FROM `user` LIMIT 1;"));
+    }
+
+    {
+        auto res = orm->First<model::User>();
+        EXPECT_TRUE(res.IsOK());
+        auto msg = res.Message();
+        auto user = std::move(res.Value());
+
+        EXPECT_EQ(user.GetID(), 1);
+        EXPECT_EQ(user.GetName(), "test");
+        EXPECT_EQ(user.GetAge(), 1);
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+}
+
 TEST_F(ORMXXTest, transaction_test) {
     auto* orm = GetORMXX();
 

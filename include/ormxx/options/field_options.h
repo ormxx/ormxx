@@ -171,7 +171,7 @@ public:
             return [width](auto& options) {
                 internal::FieldTypeStruct field_type_struct;
                 field_type_struct.data_base_field_type = internal::DataBaseFieldType::BIGINT;
-                field_type_struct.cxx_field_type = internal::CXXFieldType::INT;
+                field_type_struct.cxx_field_type = internal::CXXFieldType::INT64;
 
                 if (width != -1) {
                     field_type_struct.data_base_field_type_string = fmt::format("BIGINT({})", width);
@@ -187,7 +187,7 @@ public:
             return [width](auto& options) {
                 internal::FieldTypeStruct field_type_struct;
                 field_type_struct.data_base_field_type = internal::DataBaseFieldType::BIGINT_UNSIGNED;
-                field_type_struct.cxx_field_type = internal::CXXFieldType::UINT;
+                field_type_struct.cxx_field_type = internal::CXXFieldType::UINT64;
 
                 if (width != -1) {
                     field_type_struct.data_base_field_type_string = fmt::format("BIGINT({}) UNSIGNED", width);

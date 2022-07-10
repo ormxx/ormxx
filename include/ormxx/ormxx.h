@@ -10,18 +10,19 @@
 
 #include "./internal/defer.h"
 
+#include "./interface/connection.h"           // IWYU pragma: export
 #include "./interface/execute_result.h"       // IWYU pragma: export
 #include "./interface/index.h"                // IWYU pragma: export
 #include "./internal/inject_utility.h"        // IWYU pragma: export
 #include "./internal/macros.h"                // IWYU pragma: export
+#include "./internal/result_to_entity.h"      // IWYU pragma: export
 #include "./options/index.h"                  // IWYU pragma: export
 #include "./sql/generate_create_table_sql.h"  // IWYU pragma: export
 #include "./sql/generate_delete_sql.h"        // IWYU pragma: export
 #include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
 #include "./sql/generate_insert_sql.h"        // IWYU pragma: export
+#include "./sql/generate_select_sql.h"        // IWYU pragma: export
 #include "./sql/generate_update_sql.h"        // IWYU pragma: export
-#include "ormxx/interface/connection.h"
-#include "result/macros.h"
 
 namespace ormxx {
 
@@ -89,7 +90,7 @@ public:
             RESULT_DIRECT_RETURN(conn_->Execute(sql));
         }
 
-        RESULT_VALUE_OR_RETURN(*conn, getWriteConnection());
+        RESULT_VALUE_OR_RETURN(auto* conn, getWriteConnection());
         __ORMXX_DEFER([&conn, this]() {
             releaseWriteConnection(conn);
         });
@@ -102,7 +103,7 @@ public:
             RESULT_DIRECT_RETURN(conn_->ExecuteQuery(sql));
         }
 
-        RESULT_VALUE_OR_RETURN(*conn, getReadConnection());
+        RESULT_VALUE_OR_RETURN(auto* conn, getReadConnection());
         __ORMXX_DEFER([&conn, this]() {
             releaseReadConnection(conn);
         });
@@ -115,7 +116,7 @@ public:
             RESULT_DIRECT_RETURN(conn_->ExecuteUpdate(sql));
         }
 
-        RESULT_VALUE_OR_RETURN(*conn, getWriteConnection());
+        RESULT_VALUE_OR_RETURN(auto* conn, getWriteConnection());
         __ORMXX_DEFER([&conn, this]() {
             releaseWriteConnection(conn);
         });
@@ -130,20 +131,20 @@ public:
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> DropTable() {
-        RESULT_VALUE_OR_RETURN(const sql, GenerateDropTableSQL<T>());
+        RESULT_VALUE_OR_RETURN(const auto sql, GenerateDropTableSQL<T>());
         RESULT_DIRECT_RETURN(Execute(sql));
     }
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> CreateTable() {
-        RESULT_VALUE_OR_RETURN(const sql, GenerateCreateTableSQL<T>());
+        RESULT_VALUE_OR_RETURN(const auto sql, GenerateCreateTableSQL<T>());
         RESULT_DIRECT_RETURN(Execute(sql));
     }
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(T* t) {
-        RESULT_VALUE_OR_RETURN(const sql, GenerateInsertSQL<T>(t));
-        RESULT_VALUE_OR_RETURN(execute_res, ExecuteUpdate(sql));
+        RESULT_VALUE_OR_RETURN(const auto sql, GenerateInsertSQL<T>(t));
+        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql));
 
         if constexpr (!std::is_const_v<T>) {
             internal::InjectUtility::ClearIsSetMap(t);
@@ -154,8 +155,8 @@ public:
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(std::vector<T>* t) {
-        RESULT_VALUE_OR_RETURN(const sql, GenerateInsertSQL<T>(t));
-        RESULT_VALUE_OR_RETURN(execute_res, ExecuteUpdate(sql));
+        RESULT_VALUE_OR_RETURN(const auto sql, GenerateInsertSQL<T>(t));
+        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql));
 
         for (auto& _t : *t) {
             internal::InjectUtility::ClearIsSetMap(&_t);
@@ -166,7 +167,7 @@ public:
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(const std::vector<T>* t) {
-        RESULT_VALUE_OR_RETURN(const sql, GenerateInsertSQL<T>(t));
+        RESULT_VALUE_OR_RETURN(const auto sql, GenerateInsertSQL<T>(t));
         RESULT_DIRECT_RETURN(ExecuteUpdate(sql));
     }
 
@@ -177,7 +178,7 @@ public:
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Delete(T* t) {
-        RESULT_VALUE_OR_RETURN(const sql, GenerateDeleteSQL<T>(t));
+        RESULT_VALUE_OR_RETURN(const auto sql, GenerateDeleteSQL<T>(t));
         RESULT_DIRECT_RETURN(ExecuteUpdate(sql));
     }
 
@@ -188,8 +189,8 @@ public:
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Update(T* t) {
-        RESULT_VALUE_OR_RETURN(const sql, GenerateUpdateSQL<T>(t));
-        RESULT_VALUE_OR_RETURN(execute_res, ExecuteUpdate(sql));
+        RESULT_VALUE_OR_RETURN(const auto sql, GenerateUpdateSQL<T>(t));
+        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql));
 
         if constexpr (!std::is_const_v<T>) {
             internal::InjectUtility::ClearIsSetMap(t);
@@ -203,9 +204,21 @@ public:
         RESULT_DIRECT_RETURN(Update(&t));
     }
 
+    template <typename T>
+    ResultOr<T> First() {
+        T t;
+
+        RESULT_VALUE_OR_RETURN(const auto sql, GenerateSelectSQL(&t));
+        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteQuery(sql));
+
+        RESULT_OK_OR_RETURN(internal::ResultToEntity(*execute_res, t));
+
+        return t;
+    }
+
     template <typename Func>
     Result Transaction(Func func) {
-        RESULT_VALUE_OR_RETURN(*conn, getWriteConnection());
+        RESULT_VALUE_OR_RETURN(auto* conn, getWriteConnection());
         __ORMXX_DEFER([&conn, this]() {
             releaseWriteConnection(conn);
         });

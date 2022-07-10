@@ -18,6 +18,19 @@ namespace ormxx::internal {
 class InjectUtility {
 public:
     template <typename T, std::enable_if_t<has_ormxx_inject_v<T>, bool> = true>
+    static std::vector<std::string> GetAllFieldName(T* t) {
+        std::vector<std::string> field_name_vector;
+
+        auto options = internal::StructSchemaEntranceOptionsBuilder().WithVisitField().WithVisitForEach().Build();
+        internal::InjectEntrance::StructSchemaEntrance(
+                t, options, [&field_name_vector]([[maybe_unused]] auto&& field, auto&& options) {
+                    field_name_vector.push_back(options.field_name);
+                });
+
+        return field_name_vector;
+    }
+
+    template <typename T, std::enable_if_t<has_ormxx_inject_v<T>, bool> = true>
     static std::tuple<std::vector<std::string>, std::vector<std::string>> GetFieldNameAndValue(T* t) {
         std::vector<std::string> field_name_vector;
         std::vector<std::string> field_value_vector;

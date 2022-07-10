@@ -5,8 +5,10 @@
 #include <type_traits>
 
 #include "cppconn/resultset.h"
+#include "fmt/core.h"
 
 #include "../../interface/execute_result.h"
+#include "result/macros.h"
 
 namespace ormxx::adaptor::mysql {
 
@@ -57,124 +59,258 @@ public:
         return result_set_->next();
     }
 
-    bool IsNull(uint32_t column_index) const override {
-        return result_set_->isNull(column_index);
+    ResultOr<bool> IsNull(uint32_t column_index) const override {
+        try {
+            return result_set_->isNull(column_index);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(Result::Builder(Result::ErrorCode::GetColumnValueError)
+                                         .WithErrorMessage(fmt::format(
+                                                 "IsNull failed. [column_index={}] [err={}]", column_index, e.what()))
+                                         .Build());
+        }
     }
 
-    bool IsNull(const std::string& column_label) const override {
-        return result_set_->isNull(column_label);
+    ResultOr<bool> IsNull(const std::string& column_label) const override {
+        try {
+            return result_set_->isNull(column_label);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(Result::Builder(Result::ErrorCode::GetColumnValueError)
+                                         .WithErrorMessage(fmt::format(
+                                                 "IsNull failed. [column_label={}] [err={}]", column_label, e.what()))
+                                         .Build());
+        }
     }
 
-    bool GetBoolean(uint32_t column_index) const override {
-        return result_set_->getBoolean(column_index);
+    ResultOr<bool> GetBoolean(uint32_t column_index) const override {
+        try {
+            return result_set_->getBoolean(column_index);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(
+                    Result::Builder(Result::ErrorCode::GetColumnValueError)
+                            .WithErrorMessage(fmt::format(
+                                    "GetBoolean failed. [column_index={}] [err={}]", column_index, e.what()))
+                            .Build());
+        }
     }
 
-    bool GetBoolean(const std::string& column_label) const override {
-        return result_set_->getBoolean(column_label);
+    ResultOr<bool> GetBoolean(const std::string& column_label) const override {
+        try {
+            return result_set_->getBoolean(column_label);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(
+                    Result::Builder(Result::ErrorCode::GetColumnValueError)
+                            .WithErrorMessage(fmt::format(
+                                    "GetBoolean failed. [column_label={}] [err={}]", column_label, e.what()))
+                            .Build());
+        }
     }
 
-    void AssignColumn(bool& column, uint32_t column_index) const override {
-        column = GetBoolean(column_index);
+    Result AssignColumn(bool& column, uint32_t column_index) const override {
+        RESULT_VALUE_OR_RETURN(column, GetBoolean(column_index));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    void AssignColumn(bool& column, const std::string& column_label) const override {
-        column = GetBoolean(column_label);
+    Result AssignColumn(bool& column, const std::string& column_label) const override {
+        RESULT_VALUE_OR_RETURN(column, GetBoolean(column_label));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    int32_t GetInt(uint32_t column_index) const override {
-        return result_set_->getInt(column_index);
+    ResultOr<int32_t> GetInt(uint32_t column_index) const override {
+        try {
+            return result_set_->getInt(column_index);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(Result::Builder(Result::ErrorCode::GetColumnValueError)
+                                         .WithErrorMessage(fmt::format(
+                                                 "GetInt failed. [column_index={}] [err={}]", column_index, e.what()))
+                                         .Build());
+        }
     }
 
-    int32_t GetInt(const std::string& column_label) const override {
-        return result_set_->getInt(column_label);
+    ResultOr<int32_t> GetInt(const std::string& column_label) const override {
+        try {
+            return result_set_->getInt(column_label);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(Result::Builder(Result::ErrorCode::GetColumnValueError)
+                                         .WithErrorMessage(fmt::format(
+                                                 "GetInt failed. [column_label={}] [err={}]", column_label, e.what()))
+                                         .Build());
+        }
     }
 
-    void AssignColumn(int32_t& column, uint32_t column_index) const override {
-        column = GetInt(column_index);
+    Result AssignColumn(int32_t& column, uint32_t column_index) const override {
+        RESULT_VALUE_OR_RETURN(column, GetInt(column_index));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    void AssignColumn(int32_t& column, const std::string& column_label) const override {
-        column = GetInt(column_label);
+    Result AssignColumn(int32_t& column, const std::string& column_label) const override {
+        RESULT_VALUE_OR_RETURN(column, GetInt(column_label));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    uint32_t GetUInt(uint32_t column_index) const override {
-        return result_set_->getUInt(column_index);
+    ResultOr<uint32_t> GetUInt(uint32_t column_index) const override {
+        try {
+            return result_set_->getUInt(column_index);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(Result::Builder(Result::ErrorCode::GetColumnValueError)
+                                         .WithErrorMessage(fmt::format(
+                                                 "GetUInt failed. [column_index={}] [err={}]", column_index, e.what()))
+                                         .Build());
+        }
     }
 
-    uint32_t GetUInt(const std::string& column_label) const override {
-        return result_set_->getUInt(column_label);
+    ResultOr<uint32_t> GetUInt(const std::string& column_label) const override {
+        try {
+            return result_set_->getUInt(column_label);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(Result::Builder(Result::ErrorCode::GetColumnValueError)
+                                         .WithErrorMessage(fmt::format(
+                                                 "GetUInt failed. [column_label={}] [err={}]", column_label, e.what()))
+                                         .Build());
+        }
     }
 
-    void AssignColumn(uint32_t& column, uint32_t column_index) const override {
-        column = GetUInt(column_index);
+    Result AssignColumn(uint32_t& column, uint32_t column_index) const override {
+        RESULT_VALUE_OR_RETURN(column, GetUInt(column_index));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    void AssignColumn(uint32_t& column, const std::string& column_label) const override {
-        column = GetUInt(column_label);
+    Result AssignColumn(uint32_t& column, const std::string& column_label) const override {
+        RESULT_VALUE_OR_RETURN(column, GetUInt(column_label));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    int64_t GetInt64(uint32_t column_index) const override {
-        return result_set_->getInt64(column_index);
+    ResultOr<int64_t> GetInt64(uint32_t column_index) const override {
+        try {
+            return result_set_->getInt64(column_index);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(Result::Builder(Result::ErrorCode::GetColumnValueError)
+                                         .WithErrorMessage(fmt::format(
+                                                 "GetInt64 failed. [column_index={}] [err={}]", column_index, e.what()))
+                                         .Build());
+        }
     }
 
-    int64_t GetInt64(const std::string& column_label) const override {
-        return result_set_->getInt64(column_label);
+    ResultOr<int64_t> GetInt64(const std::string& column_label) const override {
+        try {
+            return result_set_->getInt64(column_label);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(Result::Builder(Result::ErrorCode::GetColumnValueError)
+                                         .WithErrorMessage(fmt::format(
+                                                 "GetInt64. [column_label={}], [err={}]", column_label, e.what()))
+                                         .Build());
+        }
     }
 
-    void AssignColumn(int64_t& column, uint32_t column_index) const override {
-        column = GetInt64(column_index);
+    Result AssignColumn(int64_t& column, uint32_t column_index) const override {
+        RESULT_VALUE_OR_RETURN(column, GetInt64(column_index));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    void AssignColumn(int64_t& column, const std::string& column_label) const override {
-        column = GetInt64(column_label);
+    Result AssignColumn(int64_t& column, const std::string& column_label) const override {
+        RESULT_VALUE_OR_RETURN(column, GetInt64(column_label));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    uint64_t GetUInt64(uint32_t column_index) const override {
-        return result_set_->getUInt64(column_index);
+    ResultOr<uint64_t> GetUInt64(uint32_t column_index) const override {
+        try {
+            return result_set_->getUInt64(column_index);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(
+                    Result::Builder(Result::ErrorCode::GetColumnValueError)
+                            .WithErrorMessage(
+                                    fmt::format("GetUInt64 failed. [column_index={}] [err={}]", column_index, e.what()))
+                            .Build());
+        }
     }
 
-    uint64_t GetUInt64(const std::string& column_label) const override {
-        return result_set_->getUInt64(column_label);
+    ResultOr<uint64_t> GetUInt64(const std::string& column_label) const override {
+        try {
+            return result_set_->getUInt64(column_label);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(
+                    Result::Builder(Result::ErrorCode::GetColumnValueError)
+                            .WithErrorMessage(
+                                    fmt::format("GetUInt64 failed. [column_label={}] [err={}]", column_label, e.what()))
+                            .Build());
+        }
     }
 
-    void AssignColumn(uint64_t& column, uint32_t column_index) const override {
-        column = GetUInt64(column_index);
+    Result AssignColumn(uint64_t& column, uint32_t column_index) const override {
+        RESULT_VALUE_OR_RETURN(column, GetUInt64(column_index));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    void AssignColumn(uint64_t& column, const std::string& column_label) const override {
-        column = GetUInt64(column_label);
+    Result AssignColumn(uint64_t& column, const std::string& column_label) const override {
+        RESULT_VALUE_OR_RETURN(column, GetUInt64(column_label));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    long double GetDouble(uint32_t column_index) const override {
-        return result_set_->getDouble(column_index);
+    ResultOr<long double> GetDouble(uint32_t column_index) const override {
+        try {
+            return result_set_->getDouble(column_index);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(
+                    Result::Builder(Result::ErrorCode::GetColumnValueError)
+                            .WithErrorMessage(
+                                    fmt::format("GetDouble failed. [column_index={}] [err={}]", column_index, e.what()))
+                            .Build());
+        }
     }
 
-    long double GetDouble(const std::string& column_label) const override {
-        return result_set_->getDouble(column_label);
+    ResultOr<long double> GetDouble(const std::string& column_label) const override {
+        try {
+            return result_set_->getDouble(column_label);
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(
+                    Result::Builder(Result::ErrorCode::GetColumnValueError)
+                            .WithErrorMessage(
+                                    fmt::format("GetDouble failed. [column_label={}] [err={}]", column_label, e.what()))
+                            .Build());
+        }
     }
 
-    void AssignColumn(long double& column, uint32_t column_index) const override {
-        column = GetDouble(column_index);
+    Result AssignColumn(long double& column, uint32_t column_index) const override {
+        RESULT_VALUE_OR_RETURN(column, GetDouble(column_index));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    void AssignColumn(long double& column, const std::string& column_label) const override {
-        column = GetDouble(column_label);
+    Result AssignColumn(long double& column, const std::string& column_label) const override {
+        RESULT_VALUE_OR_RETURN(column, GetDouble(column_label));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    std::string GetString(uint32_t column_index) const override {
-        return result_set_->getString(column_index);
+    ResultOr<std::string> GetString(uint32_t column_index) const override {
+        try {
+            return std::string(result_set_->getString(column_index));
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(
+                    Result::Builder(Result::ErrorCode::GetColumnValueError)
+                            .WithErrorMessage(
+                                    fmt::format("GetString failed. [column_index={}] [err={}]", column_index, e.what()))
+                            .Build());
+        }
     }
 
-    std::string GetString(const std::string& column_label) const override {
-        return result_set_->getString(column_label);
+    ResultOr<std::string> GetString(const std::string& column_label) const override {
+        try {
+            return std::string(result_set_->getString(column_label));
+        } catch (std::exception& e) {
+            RESULT_DIRECT_RETURN(
+                    Result::Builder(Result::ErrorCode::GetColumnValueError)
+                            .WithErrorMessage(
+                                    fmt::format("GetString failed. [column_label={}] [err={}]", column_label, e.what()))
+                            .Build());
+        }
     }
 
-    void AssignColumn(std::string& column, uint32_t column_index) const override {
-        column = GetString(column_index);
+    Result AssignColumn(std::string& column, uint32_t column_index) const override {
+        RESULT_VALUE_OR_RETURN(column, GetString(column_index));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
-    void AssignColumn(std::string& column, const std::string& column_label) const override {
-        column = GetString(column_label);
+    Result AssignColumn(std::string& column, const std::string& column_label) const override {
+        RESULT_VALUE_OR_RETURN(column, GetString(column_label));
+        RESULT_DIRECT_RETURN(Result::OK());
     }
 
 private:

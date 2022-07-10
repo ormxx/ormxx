@@ -7,9 +7,9 @@
 namespace ormxx::test::model {
 
 struct User {
-    int ID;
+    uint64_t ID;
     std::string Name{""};
-    int Age{0};
+    uint32_t Age{0};
 
     ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(User, ID, Name, Age)
     ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(ID,
