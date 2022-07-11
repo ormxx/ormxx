@@ -48,15 +48,23 @@ ResultOr<std::string> GenerateCreateTableSQL() {
                     if (options.not_null) {
                         field_sql += " NOT NULL";
 
-                        if (!options.auto_increment) {
+                        if (!options.auto_increment && options.custom_default_value_sql_string.empty()) {
                             field_sql += fmt::format(" DEFAULT {}", internal::FieldToString(field));
                         }
                     } else {
                         field_sql += " DEFAULT NULL";
                     }
 
+                    if (!options.custom_default_value_sql_string.empty()) {
+                        field_sql += fmt::format(" DEFAULT {}", options.custom_default_value_sql_string);
+                    }
+
                     if (options.auto_increment) {
                         field_sql += " AUTO_INCREMENT";
+                    }
+
+                    if (!options.options_raw_sql_string.empty()) {
+                        field_sql += fmt::format(" {}", options.options_raw_sql_string);
                     }
 
                     if (!options.comment.empty()) {

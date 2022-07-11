@@ -24,7 +24,7 @@ public:
         };
     }
 
-    static auto OptionsRawSQLString(const std::string& options_raw_sql_string) {
+    static auto RawSQL(const std::string& options_raw_sql_string) {
         return [options_raw_sql_string](auto& options) {
             options.options_raw_sql_string = options_raw_sql_string;
         };

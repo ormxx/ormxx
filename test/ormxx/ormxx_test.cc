@@ -67,11 +67,15 @@ CREATE TABLE `user` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
     `name` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'name',
     `age` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'age',
-    `insert_timestamp` TIMESTAMP(6) NOT NULL DEFAULT 0 COMMENT 'insert_timestamp',
+    `update_timestamp` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT 'update_timestamp',
+    `insert_timestamp` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT 'insert_timestamp',
     PRIMARY KEY (`id`) USING BTREE,
     INDEX `idx_name_age` (`name`, `age`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COMMENT = 'User';
 )"));
+
+        auto msg = res.Message();
+        std::string("OK");
     }
 
     {
@@ -274,7 +278,10 @@ TEST_F(ORMXXTest, first_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLString();
-        EXPECT_EQ(sql, std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`insert_timestamp` FROM `user` LIMIT 1;"));
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        "SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` LIMIT 1;"));
 
         auto user = std::move(res.Value());
 
@@ -298,7 +305,10 @@ TEST_F(ORMXXTest, first_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLString();
-        EXPECT_EQ(sql, std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = 1) LIMIT 1;"));
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        "SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = 1) LIMIT 1;"));
 
         auto user = res.Value();
         EXPECT_EQ(user.GetID(), 1);
@@ -338,7 +348,10 @@ TEST_F(ORMXXTest, find_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLString();
-        EXPECT_EQ(sql, std::string(R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`insert_timestamp` FROM `user` WHERE (`name` = 'test');)"));
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`name` = 'test');)"));
 
         auto s_vec = std::move(res.Value());
         EXPECT_EQ(s_vec.size(), 10);

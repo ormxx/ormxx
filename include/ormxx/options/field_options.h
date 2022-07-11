@@ -23,6 +23,10 @@ struct FieldOptionsStruct {
     std::string comment{""};
     bool not_null{false};
     bool auto_increment{false};
+
+    std::string custom_default_value_sql_string{""};
+    std::string options_raw_sql_string{""};
+
     // not for now
     std::optional<T> default_value{std::nullopt};
 };
@@ -320,7 +324,7 @@ public:
             return [precision](auto& options) {
                 internal::FieldTypeStruct field_type_struct;
                 field_type_struct.data_base_field_type = internal::DataBaseFieldType::TIMESTAMP;
-                field_type_struct.cxx_field_type = internal::CXXFieldType::UINT64;
+                field_type_struct.cxx_field_type = internal::CXXFieldType::STRING;
 
                 if (precision != -1) {
                     field_type_struct.data_base_field_type_string = fmt::format("TIMESTAMP({})", precision);
@@ -422,6 +426,18 @@ public:
     static auto AutoIncrement(bool auto_increment = true) {
         return [auto_increment](auto& options) {
             options.auto_increment = auto_increment;
+        };
+    }
+
+    static auto Default(const std::string& custom_default_value_sql_string) {
+        return [custom_default_value_sql_string](auto& options) {
+            options.custom_default_value_sql_string = custom_default_value_sql_string;
+        };
+    }
+
+    static auto RawSQL(const std::string& options_raw_sql_string) {
+        return [options_raw_sql_string](auto& options) {
+            options.options_raw_sql_string = options_raw_sql_string;
         };
     }
 

@@ -38,7 +38,7 @@ struct UserErrorSchema {
     ORMXX_STRUCT_SCHEMA_DECLARE_KEY(KeyOptions::KeyType(KeyOptions::KeyType::INDEX),
                                     KeyOptions::Field({"Name", "Age"}),
                                     KeyOptions::EngineType(KeyOptions::EngineType::BTREE))
-    ORMXX_STRUCT_SCHEMA_DECLARE_END(TableOptions::OptionsRawSQLString("ENGINE = InnoDB CHARACTER SET = utf8mb4"),
+    ORMXX_STRUCT_SCHEMA_DECLARE_END(TableOptions::RawSQL("ENGINE = InnoDB CHARACTER SET = utf8mb4"),
                                     TableOptions::Comment("User"))
 };
 
