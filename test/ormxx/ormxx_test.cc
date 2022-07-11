@@ -319,7 +319,8 @@ TEST_F(ORMXXTest, first_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = ormxx::ORMXX::sql_string_history_.back();
-        EXPECT_EQ(sql, std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age` FROM `user` WHERE (`id` = 1) LIMIT 1"));
+        EXPECT_EQ(sql,
+                  std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age` FROM `user` WHERE (`id` = 1) LIMIT 1"));
 
         auto user = res.Value();
         EXPECT_EQ(user.GetID(), 1);
