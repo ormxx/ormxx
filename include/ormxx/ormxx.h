@@ -110,6 +110,16 @@ public:
             return Where(&t);
         }
 
+        QueryBuilder& Limit(uint64_t limit) {
+            sql_data_.sql_limit = fmt::format("{}", limit);
+            return *this;
+        }
+
+        QueryBuilder& Offset(uint64_t offset) {
+            sql_data_.sql_offset = fmt::format("{}", offset);
+            return *this;
+        }
+
         template <std::enable_if_t<!std::is_void_v<Struct>, bool> = true>
         ResultOr<Struct> First() {
             Struct s;
