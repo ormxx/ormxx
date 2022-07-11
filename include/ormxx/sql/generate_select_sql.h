@@ -15,16 +15,6 @@
 
 namespace ormxx {
 
-template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
-inline ResultOr<std::string> GenerateSelectSQL(T* t) {
-    const auto table_options = internal::InjectEntrance::GetTableOptions(t);
-    const auto select_sql = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(t);
-
-    std::string sql = fmt::format("SELECT {} FROM `{}` LIMIT 1;", select_sql, table_options.table_name);
-
-    return sql;
-}
-
 inline ResultOr<std::string> GenerateSelectSQL(internal::QueryBuilderSQLData& sql_data) {
     std::string sql = "";
 
@@ -41,6 +31,8 @@ inline ResultOr<std::string> GenerateSelectSQL(internal::QueryBuilderSQLData& sq
     if (!sql_data.sql_offset.empty()) {
         sql += fmt::format(" OFFSET {}", sql_data.sql_offset);
     }
+
+    sql += ";";
 
     return sql;
 }

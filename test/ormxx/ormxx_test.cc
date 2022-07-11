@@ -298,7 +298,7 @@ TEST_F(ORMXXTest, first_test) {
 
         auto sql = orm->getLastSQLString();
         EXPECT_EQ(sql,
-                  std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age` FROM `user` WHERE (`id` = 1) LIMIT 1"));
+                  std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age` FROM `user` WHERE (`id` = 1) LIMIT 1;"));
 
         auto user = res.Value();
         EXPECT_EQ(user.GetID(), 1);

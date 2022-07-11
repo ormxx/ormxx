@@ -26,6 +26,7 @@
 #include "./internal/macros.h"            // IWYU pragma: export
 #include "./internal/result_to_entity.h"  // IWYU pragma: export
 #include "./options/index.h"              // IWYU pragma: export
+#include "ormxx/interface/result.h"
 #include "result/macros.h"
 
 namespace ormxx {
@@ -300,20 +301,13 @@ public:
 
     template <typename T>
     ResultOr<T> First() {
-        T t;
-
-        RESULT_VALUE_OR_RETURN(const auto sql, GenerateSelectSQL(&t));
-        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteQuery(sql));
-
-        RESULT_OK_OR_RETURN(internal::ResultToEntity(*execute_res, t));
-
-        return t;
+        return NewQueryBuilder<T>().First();
     }
 
     template <typename T>
     Result First(T* t) {
         RESULT_VALUE_OR_RETURN(*t, First<T>());
-        RESULT_DIRECT_RETURN(Result::OK());
+        return Result::OK();
     }
 
     template <typename Func>
