@@ -173,15 +173,11 @@ private:
     };
 
 public:
-    ORMXX();
+    ORMXX() {}
 
     ORMXX(Adaptor* adaptor, const Options& options) : adaptor_(adaptor), options_(options) {}
 
     ~ORMXX() {
-        if (adaptor_) {
-            delete adaptor_;
-        }
-
         for (auto& [k, v] : connection_pool_node_map_) {
             while (!v.pool.empty()) {
                 auto& connection = v.pool.front();
@@ -190,6 +186,10 @@ public:
                 connection->Close();
                 delete connection;
             }
+        }
+
+        if (adaptor_) {
+            delete adaptor_;
         }
     }
 
