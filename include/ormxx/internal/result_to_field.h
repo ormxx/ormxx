@@ -1,6 +1,7 @@
 #ifndef ORMXX_RESULT_TO_FIELD_H
 #define ORMXX_RESULT_TO_FIELD_H
 
+#include <optional>
 #include "fmt/core.h"
 
 #include "../interface/execute_result.h"
@@ -99,6 +100,16 @@ Result ResultToField(ExecuteResult& execute_result, T& field, O&& options) {
 
     RESULT_VALUE_OR_RETURN(field, execute_result.GetString(options.field_name));
     RESULT_DIRECT_RETURN(Result::OK());
+}
+
+template <typename T, typename O>
+Result ResultToField(ExecuteResult& execute_result, std::optional<T>& field, O&& options) {
+    if (execute_result.IsNull(options.field_name)) {
+        field = std::nullopt;
+        RESULT_DIRECT_RETURN(Result::OK());
+    }
+
+    RESULT_DIRECT_RETURN(ResultToField(execute_result, field.value(), options));
 }
 
 // template <typename Field, typename O>
