@@ -51,7 +51,7 @@ ResultOr<std::string> GenerateCreateTableSQL() {
                         if (!options.auto_increment && options.custom_default_value_sql_string.empty()) {
                             field_sql += fmt::format(" DEFAULT {}", internal::FieldToString(field));
                         }
-                    } else {
+                    } else if (options.custom_default_value_sql_string.empty()) {
                         field_sql += " DEFAULT NULL";
                     }
 
