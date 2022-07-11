@@ -312,6 +312,52 @@ TEST_F(ORMXXTest, first_test) {
     }
 }
 
+TEST_F(ORMXXTest, find_test) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        for (int i = 1; i <= 10; i++) {
+            auto user = model::User().SetID(i).SetName("test").SetAge(i);
+            auto insert_res = orm->Insert(&user);
+            EXPECT_TRUE(insert_res.IsOK());
+        }
+    }
+
+    {
+        auto res = orm->NewQueryBuilder<model::User>().Where(model::User().SetName("test")).Find();
+        EXPECT_TRUE(res.IsOK());
+
+        auto sql = orm->getLastSQLString();
+        EXPECT_EQ(
+                sql,
+                std::string(R"(SELECT `user`.`id`, `user`.`name`, `user`.`age` FROM `user` WHERE (`name` = 'test');)"));
+
+        auto s_vec = std::move(res.Value());
+        EXPECT_EQ(s_vec.size(), 10);
+
+        for (int i = 0; i < 10; i++) {
+            EXPECT_EQ(s_vec[i].GetID(), i + 1);
+            EXPECT_EQ(s_vec[i].GetName(), "test");
+            EXPECT_EQ(s_vec[i].GetAge(), i + 1);
+        }
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+}
+
 TEST_F(ORMXXTest, transaction_test) {
     auto* orm = GetORMXX();
 

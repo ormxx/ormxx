@@ -2,6 +2,7 @@
 #define ORMXX_INTERNAL_RESULT_TO_ENTITY_H
 
 #include <type_traits>
+#include <vector>
 
 #include "../interface/execute_result.h"
 #include "../interface/result.h"
@@ -37,6 +38,32 @@ inline Result ResultToEntity(ExecuteResult& execute_result, T& t) {
     });
 
     RESULT_DIRECT_RETURN(res);
+}
+
+template <typename T, std::enable_if_t<has_ormxx_inject_v<T>, bool> = true>
+inline Result ResultToEntity(ExecuteResult& execute_result, std::vector<T>& t_vec) {
+    while (execute_result.Next()) {
+        auto res = Result::OK();
+
+        T t;
+
+        auto options = StructSchemaEntranceOptionsBuilder().WithVisitField().WithVisitForEach().Build();
+        InjectEntrance::StructSchemaEntrance(&t, options, [&execute_result, &res](auto&& field, auto&& options) {
+            if (!res.IsOK()) {
+                return;
+            }
+
+            res = ResultToField(execute_result, *field, options);
+        });
+
+        if (!res.IsOK()) {
+            RESULT_DIRECT_RETURN(res);
+        }
+
+        t_vec.push_back(t);
+    }
+
+    return Result::OK();
 }
 
 }  // namespace ormxx::internal
