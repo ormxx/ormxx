@@ -173,7 +173,7 @@ private:
     };
 
 public:
-    ORMXX() = delete;
+    ORMXX();
 
     ORMXX(Adaptor* adaptor, const Options& options) : adaptor_(adaptor), options_(options) {}
 
