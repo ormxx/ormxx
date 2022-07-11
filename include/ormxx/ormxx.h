@@ -399,11 +399,11 @@ private:
     }
 
 protected:
-    std::unordered_map<ConnectionType, connectionPoolNode> connection_pool_node_map_;
+    std::unordered_map<ConnectionType, connectionPoolNode> connection_pool_node_map_{};
 
-    Adaptor* adaptor_;
+    Adaptor* adaptor_{nullptr};
 
-    Options options_;
+    Options options_{};
 
     inline static thread_local Connection* conn_ = nullptr;
 
