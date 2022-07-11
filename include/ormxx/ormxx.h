@@ -139,7 +139,6 @@ public:
         template <std::enable_if_t<!std::is_void_v<Struct>, bool> = true>
         ResultOr<std::vector<Struct>> Find() {
             Struct s;
-            std::vector<Struct> s_vec;
 
             auto _sql_data = sql_data_;
             _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
@@ -147,6 +146,7 @@ public:
             RESULT_VALUE_OR_RETURN(const auto sql, GenerateSelectSQL(_sql_data));
             RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_->ExecuteQuery(sql));
 
+            std::vector<Struct> s_vec;
             RESULT_OK_OR_RETURN(internal::ResultToEntity(*execute_res, s_vec));
 
             return s_vec;
