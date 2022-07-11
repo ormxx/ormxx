@@ -11,21 +11,21 @@
 
 #include "./internal/defer.h"
 #include "./internal/query_builder_sql_data.h"
+#include "./sql/generate_create_table_sql.h"
+#include "./sql/generate_delete_sql.h"
+#include "./sql/generate_drop_table_sql.h"
+#include "./sql/generate_insert_sql.h"
+#include "./sql/generate_select_sql.h"
+#include "./sql/generate_update_sql.h"
+#include "./sql/sql_utility.h"
 
-#include "./interface/connection.h"           // IWYU pragma: export
-#include "./interface/execute_result.h"       // IWYU pragma: export
-#include "./interface/index.h"                // IWYU pragma: export
-#include "./internal/inject_utility.h"        // IWYU pragma: export
-#include "./internal/macros.h"                // IWYU pragma: export
-#include "./internal/result_to_entity.h"      // IWYU pragma: export
-#include "./options/index.h"                  // IWYU pragma: export
-#include "./sql/generate_create_table_sql.h"  // IWYU pragma: export
-#include "./sql/generate_delete_sql.h"        // IWYU pragma: export
-#include "./sql/generate_drop_table_sql.h"    // IWYU pragma: export
-#include "./sql/generate_insert_sql.h"        // IWYU pragma: export
-#include "./sql/generate_select_sql.h"        // IWYU pragma: export
-#include "./sql/generate_update_sql.h"        // IWYU pragma: export
-#include "./sql/sql_utility.h"                // IWYU pragma: export
+#include "./interface/connection.h"       // IWYU pragma: export
+#include "./interface/execute_result.h"   // IWYU pragma: export
+#include "./interface/index.h"            // IWYU pragma: export
+#include "./internal/inject_utility.h"    // IWYU pragma: export
+#include "./internal/macros.h"            // IWYU pragma: export
+#include "./internal/result_to_entity.h"  // IWYU pragma: export
+#include "./options/index.h"              // IWYU pragma: export
 #include "result/macros.h"
 
 namespace ormxx {
