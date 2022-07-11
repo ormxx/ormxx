@@ -2,7 +2,7 @@ option(ormxx_build_tests "Build all of ormxx's own tests." OFF)
 
 cmake_minimum_required(VERSION 3.14)
 
-project(ormxx VERSION 0.0.3)
+project(ormxx VERSION 0.0.4)
 
 # libmysqlcppconn-dev
 find_package(mysqlcppconn)
