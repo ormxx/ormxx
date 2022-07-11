@@ -166,7 +166,7 @@ public:
     //     return QueryBuilder(this);
     // }
 
-private:
+protected:
     struct connectionPoolNode {
         std::mutex mutex_;
         std::list<Connection*> pool;
@@ -398,7 +398,7 @@ private:
         releaseConnection(connection, ConnectionType::READ);
     }
 
-private:
+protected:
     std::unordered_map<ConnectionType, connectionPoolNode> connection_pool_node_map_;
 
     Adaptor* adaptor_;
