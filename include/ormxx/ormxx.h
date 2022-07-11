@@ -5,10 +5,12 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <type_traits>
 #include <unordered_map>
 
 #include "./internal/defer.h"
+#include "./internal/query_builder_sql_data.h"
 
 #include "./interface/connection.h"           // IWYU pragma: export
 #include "./interface/execute_result.h"       // IWYU pragma: export
@@ -23,6 +25,8 @@
 #include "./sql/generate_insert_sql.h"        // IWYU pragma: export
 #include "./sql/generate_select_sql.h"        // IWYU pragma: export
 #include "./sql/generate_update_sql.h"        // IWYU pragma: export
+#include "./sql/sql_utility.h"                // IWYU pragma: export
+#include "result/macros.h"
 
 namespace ormxx {
 
@@ -58,6 +62,84 @@ public:
         Options options_;
     };
 
+public:
+    template <typename Struct = void>
+    class QueryBuilder {
+    public:
+        QueryBuilder(ORMXX* ormxx) : ormxx_(ormxx) {
+            if constexpr (!std::is_void_v<Struct>) {
+                const auto table_options_ = internal::InjectEntrance::GetTableOptions<Struct>();
+                sql_data_.sql_from = fmt::format("`{}`", table_options_.table_name);
+            }
+        }
+
+        ~QueryBuilder() {}
+
+        template <typename T>
+        QueryBuilder& AndWhere(T* t) {
+            std::string prefix = sql_data_.sql_where.empty() ? "" : " AND ";
+            sql_data_.sql_where += fmt::format("{}({})", prefix, internal::SQLUtility::GenerateWhereSQLString(t));
+            return *this;
+        }
+
+        template <typename T>
+        QueryBuilder& AndWhere(T&& t) {
+            return AndWhere(&t);
+        }
+
+        template <typename T>
+        QueryBuilder& OrWhere(T* t) {
+            std::string prefix = sql_data_.sql_where.empty() ? "" : " OR ";
+            sql_data_.sql_where += fmt::format("{}({})", prefix, internal::SQLUtility::GenerateWhereSQLString(t));
+            return *this;
+        }
+
+        template <typename T>
+        QueryBuilder& OrWhere(T&& t) {
+            return OrWhere(&t);
+        }
+
+        template <typename T>
+        QueryBuilder& Where(T* t) {
+            return AndWhere(t);
+        }
+
+        template <typename T>
+        QueryBuilder& Where(T&& t) {
+            return Where(&t);
+        }
+
+        template <std::enable_if_t<!std::is_void_v<Struct>, bool> = true>
+        ResultOr<Struct> First() {
+            Struct s;
+
+            auto _sql_data = sql_data_;
+            _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
+            _sql_data.sql_limit = "1";
+
+            RESULT_VALUE_OR_RETURN(const auto sql, GenerateSelectSQL(_sql_data));
+            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_->ExecuteQuery(sql));
+
+            RESULT_OK_OR_RETURN(internal::ResultToEntity(*execute_res, s));
+
+            return s;
+        }
+
+    private:
+        internal::QueryBuilderSQLData sql_data_{};
+        ORMXX* ormxx_{nullptr};
+        Struct* t{nullptr};
+    };
+
+    template <typename T>
+    QueryBuilder<T> NewQueryBuilder() {
+        return QueryBuilder<T>(this);
+    }
+
+    // QueryBuilder<void> NewQueryBuilder() {
+    //     return QueryBuilder(this);
+    // }
+
 private:
     struct connectionPoolNode {
         std::mutex mutex_;
@@ -86,6 +168,10 @@ public:
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) {
+#if defined(ORMXX_BUILD_TESTS)
+        sql_string_history_.push_back(sql);
+#endif
+
         if (conn_ != nullptr) {
             RESULT_DIRECT_RETURN(conn_->Execute(sql));
         }
@@ -99,6 +185,10 @@ public:
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) {
+#if defined(ORMXX_BUILD_TESTS)
+        sql_string_history_.push_back(sql);
+#endif
+
         if (conn_ != nullptr) {
             RESULT_DIRECT_RETURN(conn_->ExecuteQuery(sql));
         }
@@ -112,6 +202,10 @@ public:
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) {
+#if defined(ORMXX_BUILD_TESTS)
+        sql_string_history_.push_back(sql);
+#endif
+
         if (conn_ != nullptr) {
             RESULT_DIRECT_RETURN(conn_->ExecuteUpdate(sql));
         }
@@ -216,6 +310,12 @@ public:
         return t;
     }
 
+    template <typename T>
+    Result First(T* t) {
+        RESULT_VALUE_OR_RETURN(*t, First<T>());
+        RESULT_DIRECT_RETURN(Result::OK());
+    }
+
     template <typename Func>
     Result Transaction(Func func) {
         RESULT_VALUE_OR_RETURN(auto* conn, getWriteConnection());
@@ -286,6 +386,7 @@ private:
 
     Options options_;
 
+    inline static std::vector<std::string> sql_string_history_ = {};
     inline static thread_local Connection* conn_ = nullptr;
 };
 

@@ -297,9 +297,31 @@ TEST_F(ORMXXTest, first_test) {
     {
         auto res = orm->First<model::User>();
         EXPECT_TRUE(res.IsOK());
-        auto msg = res.Message();
         auto user = std::move(res.Value());
 
+        EXPECT_EQ(user.GetID(), 1);
+        EXPECT_EQ(user.GetName(), "test");
+        EXPECT_EQ(user.GetAge(), 1);
+    }
+
+    {
+        model::User user;
+        auto res = orm->First(&user);
+        EXPECT_TRUE(res.IsOK());
+
+        EXPECT_EQ(user.GetID(), 1);
+        EXPECT_EQ(user.GetName(), "test");
+        EXPECT_EQ(user.GetAge(), 1);
+    }
+
+    {
+        auto res = orm->NewQueryBuilder<model::User>().Where(model::User().SetID(1)).First();
+        EXPECT_TRUE(res.IsOK());
+
+        auto sql = ormxx::ORMXX::sql_string_history_.back();
+        EXPECT_EQ(sql, std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age` FROM `user` WHERE (`id` = 1) LIMIT 1"));
+
+        auto user = res.Value();
         EXPECT_EQ(user.GetID(), 1);
         EXPECT_EQ(user.GetName(), "test");
         EXPECT_EQ(user.GetAge(), 1);

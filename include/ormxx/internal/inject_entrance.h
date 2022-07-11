@@ -15,7 +15,7 @@ namespace ormxx::internal {
 class InjectEntrance {
 public:
     template <typename T>
-    static ::ormxx::TableOptions GetTableOptions([[maybe_unused]] T* t) {
+    static ::ormxx::TableOptions GetTableOptions([[maybe_unused]] T* t = nullptr) {
         if constexpr (has_ormxx_get_table_options_v<T>) {
             return T::__ORMXX_GetTableOptions();
         } else if constexpr (has_ormxx_external_get_table_options_v<T>) {
