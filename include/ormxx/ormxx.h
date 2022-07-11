@@ -22,12 +22,11 @@
 #include "./interface/connection.h"       // IWYU pragma: export
 #include "./interface/execute_result.h"   // IWYU pragma: export
 #include "./interface/index.h"            // IWYU pragma: export
+#include "./interface/result.h"           // IWYU pragma: export
 #include "./internal/inject_utility.h"    // IWYU pragma: export
 #include "./internal/macros.h"            // IWYU pragma: export
 #include "./internal/result_to_entity.h"  // IWYU pragma: export
 #include "./options/index.h"              // IWYU pragma: export
-#include "ormxx/interface/result.h"
-#include "result/macros.h"
 
 namespace ormxx {
 

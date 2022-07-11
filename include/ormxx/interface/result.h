@@ -1,8 +1,8 @@
 #ifndef ORMXX_INTERNAL_RESULT_H
 #define ORMXX_INTERNAL_RESULT_H
 
-#include "result/result.h"
-#include "result/result_or.h"
+#include "result/result.h"     // IWYU pragma: export
+#include "result/result_or.h"  // IWYU pragma: export
 
 namespace ormxx {
 
