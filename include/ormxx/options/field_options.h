@@ -320,7 +320,7 @@ public:
             return [precision](auto& options) {
                 internal::FieldTypeStruct field_type_struct;
                 field_type_struct.data_base_field_type = internal::DataBaseFieldType::TIMESTAMP;
-                field_type_struct.cxx_field_type = internal::CXXFieldType::STRING;
+                field_type_struct.cxx_field_type = internal::CXXFieldType::UINT64;
 
                 if (precision != -1) {
                     field_type_struct.data_base_field_type_string = fmt::format("TIMESTAMP({})", precision);

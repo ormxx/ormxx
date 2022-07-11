@@ -11,6 +11,8 @@ struct User {
     std::string Name{""};
     uint32_t Age{0};
 
+    uint64_t InsertTimestamp{0};
+
     ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(User, ID, Name, Age)
     ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(ID,
                                       FieldOptions::FieldType::BigIntUnsigned(),
@@ -28,6 +30,11 @@ struct User {
                                       FieldOptions::FieldName("age"),
                                       FieldOptions::NotNull(),
                                       FieldOptions::Comment("age"))
+    ORMXX_STRUCT_SCHEMA_DECLARE_FIELD(InsertTimestamp,
+                                      FieldOptions::FieldType::Timestamp(6),
+                                      FieldOptions::FieldName("insert_timestamp"),
+                                      FieldOptions::NotNull(),
+                                      FieldOptions::Comment("insert_timestamp"))
 
     ORMXX_STRUCT_SCHEMA_DECLARE_KEY(KeyOptions::KeyType::PRIMARY,
                                     KeyOptions::Field({"ID"}),
