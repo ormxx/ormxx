@@ -318,7 +318,7 @@ TEST_F(ORMXXTest, first_test) {
         auto res = orm->NewQueryBuilder<model::User>().Where(model::User().SetID(1)).First();
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = ormxx::ORMXX::sql_string_history_.back();
+        auto sql = orm->getLastSQLString();
         EXPECT_EQ(sql,
                   std::string("SELECT `user`.`id`, `user`.`name`, `user`.`age` FROM `user` WHERE (`id` = 1) LIMIT 1"));
 

@@ -169,7 +169,7 @@ public:
 
     ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) {
 #if defined(ORMXX_BUILD_TESTS)
-        sql_string_history_.push_back(sql);
+        addSQLStringToHistory(sql);
 #endif
 
         if (conn_ != nullptr) {
@@ -186,7 +186,7 @@ public:
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) {
 #if defined(ORMXX_BUILD_TESTS)
-        sql_string_history_.push_back(sql);
+        addSQLStringToHistory(sql);
 #endif
 
         if (conn_ != nullptr) {
@@ -203,7 +203,7 @@ public:
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) {
 #if defined(ORMXX_BUILD_TESTS)
-        sql_string_history_.push_back(sql);
+        addSQLStringToHistory(sql);
 #endif
 
         if (conn_ != nullptr) {
@@ -386,8 +386,24 @@ private:
 
     Options options_;
 
-    inline static std::vector<std::string> sql_string_history_ = {};
     inline static thread_local Connection* conn_ = nullptr;
+
+#if defined(ORMXX_BUILD_TESTS)
+private:
+    void addSQLStringToHistory(const std::string& sql_string) {
+        sql_string_history_.push_back(sql_string);
+    }
+
+    const std::vector<std::string>& getSQLStringHistory() const {
+        return sql_string_history_;
+    }
+
+    const std::string& getLastSQLString() const {
+        return sql_string_history_.back();
+    }
+
+    std::vector<std::string> sql_string_history_{};
+#endif
 };
 
 }  // namespace ormxx
