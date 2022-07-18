@@ -326,7 +326,7 @@ public:
 
     template <typename T>
     ResultOr<T> First() {
-        return NewQueryBuilder<T>().First();
+        RESULT_DIRECT_RETURN(NewQueryBuilder<T>().First());
     }
 
     template <typename T>
@@ -349,7 +349,7 @@ public:
         auto res = func();
         if (!res.IsOK()) {
             conn_->Rollback();
-            return res;
+            RESULT_DIRECT_RETURN(res);
         }
 
         RESULT_DIRECT_RETURN(conn_->Commit());
@@ -367,7 +367,7 @@ private:
             return connection;
         }
 
-        return adaptor_->GetConnection(connection_type);
+        RESULT_DIRECT_RETURN(adaptor_->GetConnection(connection_type));
     }
 
     ResultOr<Connection*> getWriteConnection() {
