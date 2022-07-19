@@ -1,4 +1,4 @@
-option(ormxx_build_tests "Build all of ormxx's own tests." OFF)
+option(ORMXX_BUILD_TESTS "Build all of ormxx's own tests." OFF)
 
 cmake_minimum_required(VERSION 3.14)
 
@@ -43,7 +43,7 @@ target_include_directories(ormxx INTERFACE
     ${RESULT_CPP_INCLUDE_DIR}
 )
 
-if(ormxx_build_tests)
+if(ORMXX_BUILD_TESTS)
     enable_testing()
 
     add_subdirectory(test/)
