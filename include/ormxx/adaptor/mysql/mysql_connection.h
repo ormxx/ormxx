@@ -60,11 +60,12 @@ public:
         try {
             pre_auto_commit_value = connection_->getAutoCommit();
             connection_->setAutoCommit(false);
-            RESULT_DIRECT_RETURN(Result::OK());
+            return Result::OK();
         } catch (std::exception& e) {
-            return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL Begin Transaction failed. [err={}]", e.what()))
-                    .Build();
+            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
+                               .WithErrorMessage(fmt::format("MySQL Begin Transaction failed. [err={}]", e.what()))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
         }
     }
 
@@ -72,11 +73,12 @@ public:
         try {
             connection_->commit();
             connection_->setAutoCommit(pre_auto_commit_value);
-            RESULT_DIRECT_RETURN(Result::OK());
+            return Result::OK();
         } catch (std::exception& e) {
-            return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL Commit failed. [err={}]", e.what()))
-                    .Build();
+            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
+                               .WithErrorMessage(fmt::format("MySQL Commit failed. [err={}]", e.what()))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
         }
     }
 
@@ -84,11 +86,12 @@ public:
         try {
             connection_->rollback();
             connection_->setAutoCommit(pre_auto_commit_value);
-            RESULT_DIRECT_RETURN(Result::OK());
+            return Result::OK();
         } catch (std::exception& e) {
-            return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL Rollback failed. [err={}]", e.what()))
-                    .Build();
+            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
+                               .WithErrorMessage(fmt::format("MySQL Rollback failed. [err={}]", e.what()))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
         }
     }
 
@@ -105,14 +108,15 @@ public:
             res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(execute_success)));
             return res;
         } catch (std::exception& e) {
-            return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL Execute failed. [err={}] [sql={}]", e.what(), sql))
-                    .Build();
+            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
+                               .WithErrorMessage(fmt::format("MySQL Execute failed. [err={}] [sql={}]", e.what(), sql))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
         }
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) override {
-        return Execute(sql, schema_);
+        RESULT_DIRECT_RETURN(Execute(sql, schema_));
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql, const std::string& schema) {
@@ -128,14 +132,16 @@ public:
             res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(result_set)));
             return res;
         } catch (std::exception& e) {
-            return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL ExecuteQuery failed. [err={}] [sql={}]", e.what(), sql))
-                    .Build();
+            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
+                               .WithErrorMessage(
+                                       fmt::format("MySQL ExecuteQuery failed. [err={}] [sql={}]", e.what(), sql))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
         }
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) override {
-        return ExecuteQuery(sql, schema_);
+        RESULT_DIRECT_RETURN(ExecuteQuery(sql, schema_));
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql, const std::string& schema) {
@@ -151,14 +157,16 @@ public:
             res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(rows_affected)));
             return res;
         } catch (std::exception& e) {
-            return Result::Builder(Result::ErrorCode::ExecuteError)
-                    .WithErrorMessage(fmt::format("MySQL ExecuteUpdate failed. [err={}] [sql={}]", e.what(), sql))
-                    .Build();
+            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
+                               .WithErrorMessage(
+                                       fmt::format("MySQL ExecuteUpdate failed. [err={}] [sql={}]", e.what(), sql))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
         }
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) override {
-        return ExecuteUpdate(sql, schema_);
+        RESULT_DIRECT_RETURN(ExecuteUpdate(sql, schema_));
     }
 
 private:

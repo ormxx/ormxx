@@ -67,10 +67,11 @@ public:
 
     ResultOr<Connection*> GetConnection(ConnectionType type = ConnectionType::WRITE) override {
         if (!HasConfig(type)) {
-            return Result::Builder(Result::ErrorCode::ConnectionError)
-                    .WithErrorMessage(fmt::format("No config found. [connection type={}]",
-                                                  type == ConnectionType::WRITE ? "WRITE" : "READ"))
-                    .Build();
+            auto res = Result::Builder(Result::ErrorCode::ConnectionError)
+                               .WithErrorMessage(fmt::format("No config found. [connection type={}]",
+                                                             type == ConnectionType::WRITE ? "WRITE" : "READ"))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
         }
 
         try {
@@ -78,9 +79,10 @@ public:
             auto* conn = driver_->connect(config);
             return dynamic_cast<Connection*>(new MySQLConnection(conn));
         } catch (std::exception& e) {
-            return Result::Builder(Result::ErrorCode::ConnectionError)
-                    .WithErrorMessage(fmt::format("Failed to get connection. [error={}]", e.what()))
-                    .Build();
+            auto res = Result::Builder(Result::ErrorCode::ConnectionError)
+                               .WithErrorMessage(fmt::format("Failed to get connection. [error={}]", e.what()))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
         }
     }
 
