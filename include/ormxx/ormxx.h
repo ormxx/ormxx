@@ -366,8 +366,7 @@ private:
             if (connection->ReConnect()) {
                 return connection;
             } else {
-                connection->Close();
-                delete connection;
+                releaseConn(connection);
             }
         }
 
@@ -389,8 +388,7 @@ private:
         if (node.pool.size() < options_.max_idle_connection) {
             node.pool.push_back(connection);
         } else {
-            connection->Close();
-            delete connection;
+            releaseConn(connection);
         }
     }
 
@@ -400,6 +398,12 @@ private:
 
     void releaseReadConnection(Connection* connection) {
         releaseConnection(connection, ConnectionType::READ);
+    }
+
+protected:
+    void releaseConn(Connection* connection) {
+        connection->Close();
+        delete connection;
     }
 
 protected:
