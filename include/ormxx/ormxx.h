@@ -360,11 +360,15 @@ private:
         auto& node = connection_pool_node_map_[connection_type];
         std::unique_lock<std::mutex> lock(node.mutex_);
 
-        if (!node.pool.empty()) {
+        while (!node.pool.empty()) {
             auto* connection = node.pool.front();
             node.pool.pop_front();
-            connection->ReConnect();
-            return connection;
+            if (connection->ReConnect()) {
+                return connection;
+            } else {
+                connection->Close();
+                delete connection;
+            }
         }
 
         RESULT_DIRECT_RETURN(adaptor_->GetConnection(connection_type));
