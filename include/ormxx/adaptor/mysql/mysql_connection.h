@@ -49,7 +49,10 @@ public:
 
     void Close() override {
         if (connection_) {
-            connection_->close();
+            try {
+                connection_->close();
+            } catch (...) {
+            }
 
             delete connection_;
             connection_ = nullptr;
