@@ -1,6 +1,7 @@
 #ifndef ORMXX_ADAPTOR_MYSQL_MYSQL_CONNECTION_H
 #define ORMXX_ADAPTOR_MYSQL_MYSQL_CONNECTION_H
 
+#include <atomic>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -49,6 +50,8 @@ public:
 
     void Close() override {
         if (connection_) {
+            is_closed = true;
+
             try {
                 connection_->close();
             } catch (...) {
@@ -57,6 +60,10 @@ public:
             delete connection_;
             connection_ = nullptr;
         }
+    }
+
+    bool IsClosed() override {
+        return is_closed;
     }
 
     Result BeginTransaction() override {
@@ -175,6 +182,7 @@ public:
 private:
     std::string schema_{""};
     sql::Connection* connection_{nullptr};
+    std::atomic_bool is_closed{false};
 
     inline static thread_local bool pre_auto_commit_value = true;
 };

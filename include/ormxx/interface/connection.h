@@ -16,6 +16,7 @@ public:
     virtual bool ReConnect() = 0;
 
     virtual void Close() = 0;
+    virtual bool IsClosed() = 0;
 
     virtual Result BeginTransaction() = 0;
     virtual Result Commit() = 0;
