@@ -232,6 +232,12 @@ private:
             const auto& field = fields[i - 1];
             const auto& t = field.field_type.cxx_field_type;
 
+            if (std::holds_alternative<SQLStatement::NullType>(field.value)) {
+                // `sqlType` is not used in the mysql-connector-cpp implementation
+                statement->setNull(i, 0);
+                continue;
+            }
+
             if (t == CXXFieldType::BOOLEAN) {
                 statement->setBoolean(i, std::get<bool>(field.value));
             } else if (t == CXXFieldType::INT) {

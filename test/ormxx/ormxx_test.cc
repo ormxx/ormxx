@@ -104,7 +104,8 @@ TEST_F(ORMXXTest, insert_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES ('test', 1);)"));
+        auto expected_sql = std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES (?, ?);)");
+        EXPECT_EQ(sql, expected_sql);
 
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
@@ -117,7 +118,8 @@ TEST_F(ORMXXTest, insert_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES ('test', 2);)"));
+        auto expected_sql = std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES (?, ?);)");
+        EXPECT_EQ(sql, expected_sql);
 
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
@@ -128,7 +130,8 @@ TEST_F(ORMXXTest, insert_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES ('name1', 3);)"));
+        auto expected_sql = std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES (?, ?);)");
+        EXPECT_EQ(sql, expected_sql);
 
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
@@ -144,15 +147,16 @@ TEST_F(ORMXXTest, insert_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES
- ('name4', 4),
- ('name5', 5),
- ('name6', 6),
- ('name7', 7),
- ('name8', 8),
- ('name9', 9),
- ('name10', 10);
-)"));
+        auto expected_sql = std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES
+ (?, ?),
+ (?, ?),
+ (?, ?),
+ (?, ?),
+ (?, ?),
+ (?, ?),
+ (?, ?);
+)");
+        EXPECT_EQ(sql, expected_sql);
 
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 7);
@@ -165,7 +169,8 @@ TEST_F(ORMXXTest, insert_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`id`, `name`, `age`) VALUES (999, 'dd', 10);)"));
+        auto expected_sql = std::string(R"(INSERT INTO `user` (`id`, `name`, `age`) VALUES (?, ?, ?);)");
+        EXPECT_EQ(sql, expected_sql);
 
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);

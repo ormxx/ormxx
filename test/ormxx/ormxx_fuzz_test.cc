@@ -60,27 +60,35 @@ TEST_F(ORMXXFuzzTest, escape_characters) {
     }
 
     {
-        auto user = model::User().SetName(R"(
+        auto user = model::User()
+                            .SetName(R"(
 {
         "main": "659733",
         "t": "{\"e\":\"3-71\",\"c\":\"s:5\",\"i\":\"60\"}"
 }
-        )");
-
-        SNAPSHOT(user.GetName());
+        )")
+                            .SetAge(12);
 
         auto res = orm->Insert(&user);
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        SNAPSHOT(sql);
+        auto expected_sql = std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES (?, ?);)");
+        EXPECT_EQ(sql, expected_sql);
     }
 
     {
         auto res = orm->NewQueryBuilder<model::User>().First();
         EXPECT_TRUE(res.IsOK());
         auto user = std::move(res.Value());
-        SNAPSHOT(user.GetName());
+        auto name = user.GetName();
+        auto expected_name = std::string(R"(
+{
+        "main": "659733",
+        "t": "{\"e\":\"3-71\",\"c\":\"s:5\",\"i\":\"60\"}"
+}
+        )");
+        EXPECT_EQ(name, expected_name);
     }
 
     {

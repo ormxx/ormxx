@@ -15,6 +15,7 @@
 #include "./sql/generate_delete_sql.h"
 #include "./sql/generate_drop_table_sql.h"
 #include "./sql/generate_insert_sql.h"
+#include "./sql/generate_insert_sql_statement.h"
 #include "./sql/generate_select_sql.h"
 #include "./sql/generate_update_sql.h"
 #include "./sql/sql_utility.h"
@@ -275,8 +276,8 @@ public:
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(T* t) {
-        RESULT_VALUE_OR_RETURN(const auto sql, GenerateInsertSQL<T>(t));
-        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql));
+        RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateInsertSQLStatement<T>(t));
+        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql_statement));
 
         if constexpr (!std::is_const_v<T>) {
             internal::InjectUtility::ClearIsSetMap(t);
@@ -287,8 +288,8 @@ public:
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(std::vector<T>* t) {
-        RESULT_VALUE_OR_RETURN(const auto sql, GenerateInsertSQL<T>(t));
-        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql));
+        RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateInsertSQLStatement<T>(t));
+        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql_statement));
 
         for (auto& _t : *t) {
             internal::InjectUtility::ClearIsSetMap(&_t);
@@ -299,8 +300,8 @@ public:
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Insert(const std::vector<T>* t) {
-        RESULT_VALUE_OR_RETURN(const auto sql, GenerateInsertSQL<T>(t));
-        RESULT_DIRECT_RETURN(ExecuteUpdate(sql));
+        RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateInsertSQLStatement<T>(t));
+        RESULT_DIRECT_RETURN(ExecuteUpdate(sql_statement));
     }
 
     template <typename T>
