@@ -34,8 +34,8 @@ public:
         internal::InjectEntrance::StructSchemaEntrance(
                 t,
                 options,
-                [&is_set_map, &field_name, &field_name_sql_string, &field_value, &field_value_sql_string](
-                        auto&& field, auto&& options) {
+                [&is_set_map, &field_name_sql_string, &field_value, &field_value_sql_string](auto&& field,
+                                                                                             auto&& options) {
                     if (!is_set_map.count(options.origin_field_name) ||
                         is_set_map.at(options.origin_field_name) == false) {
                         return;
