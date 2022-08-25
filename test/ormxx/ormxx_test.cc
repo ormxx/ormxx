@@ -44,7 +44,7 @@ TEST_F(ORMXXTest, drop_table_test) {
         auto res = orm->DropTable<model::User>();
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(sql, std::string("DROP TABLE IF EXISTS `user`;"));
     }
 }
@@ -61,7 +61,7 @@ TEST_F(ORMXXTest, create_table_test) {
         auto res = orm->CreateTable<model::User>();
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(sql, std::string(R"(
 CREATE TABLE `user` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
@@ -103,7 +103,7 @@ TEST_F(ORMXXTest, insert_test) {
         auto res = orm->Insert(&user);
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES ('test', 1);)"));
 
         auto execute_res = std::move(res.Value());
@@ -116,7 +116,7 @@ TEST_F(ORMXXTest, insert_test) {
         auto res = orm->Insert(&user);
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES ('test', 2);)"));
 
         auto execute_res = std::move(res.Value());
@@ -127,7 +127,7 @@ TEST_F(ORMXXTest, insert_test) {
         auto res = orm->Insert<model::User>(model::User().SetName("name1").SetAge(3));
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES ('name1', 3);)"));
 
         auto execute_res = std::move(res.Value());
@@ -143,7 +143,7 @@ TEST_F(ORMXXTest, insert_test) {
         auto res = orm->Insert(user_vector);
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES
  ('name4', 4),
  ('name5', 5),
@@ -164,7 +164,7 @@ TEST_F(ORMXXTest, insert_test) {
         auto res = orm->Insert(&user);
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(sql, std::string(R"(INSERT INTO `user` (`id`, `name`, `age`) VALUES (999, 'dd', 10);)"));
 
         auto execute_res = std::move(res.Value());
@@ -199,7 +199,7 @@ TEST_F(ORMXXTest, delete_test) {
         auto res = orm->Delete<model::User>(&user);
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(sql, std::string("DELETE FROM `user` WHERE `id` = 1;"));
     }
 
@@ -233,7 +233,7 @@ TEST_F(ORMXXTest, update_test) {
             auto res = orm->Update(&user);
             EXPECT_TRUE(res.IsOK());
 
-            auto sql = orm->getLastSQLString();
+            auto sql = orm->getLastSQLStatement().GetSQLString();
             EXPECT_EQ(sql, std::string(R"(UPDATE `user` SET `name` = 'test2' WHERE `id` = 1;)"));
         }
 
@@ -243,7 +243,7 @@ TEST_F(ORMXXTest, update_test) {
             auto res = orm->Update(&user);
             EXPECT_TRUE(res.IsOK());
 
-            auto sql = orm->getLastSQLString();
+            auto sql = orm->getLastSQLStatement().GetSQLString();
             EXPECT_EQ(sql, std::string(R"(UPDATE `user` SET `name` = 'test3' WHERE `id` = 1;)"));
         }
     }
@@ -277,7 +277,7 @@ TEST_F(ORMXXTest, first_test) {
         auto res = orm->First<model::User>();
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(
                 sql,
                 std::string(
@@ -304,7 +304,7 @@ TEST_F(ORMXXTest, first_test) {
         auto res = orm->NewQueryBuilder<model::User>().Where(model::User().SetID(1)).First();
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(
                 sql,
                 std::string(
@@ -347,7 +347,7 @@ TEST_F(ORMXXTest, find_test) {
         auto res = orm->NewQueryBuilder<model::User>().Where(model::User().SetName("test")).Find();
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         EXPECT_EQ(
                 sql,
                 std::string(

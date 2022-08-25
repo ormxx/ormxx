@@ -190,13 +190,13 @@ public:
         }
     }
 
-    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) {
+    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const SQLStatement& sql_statement) {
 #if defined(ORMXX_BUILD_TESTS)
-        addSQLStringToHistory(sql);
+        addSQLStatementToHistory(sql_statement);
 #endif
 
         if (conn_ != nullptr) {
-            RESULT_DIRECT_RETURN(conn_->Execute(sql));
+            RESULT_DIRECT_RETURN(conn_->Execute(sql_statement));
         }
 
         RESULT_VALUE_OR_RETURN(auto* conn, getWriteConnection());
@@ -204,16 +204,21 @@ public:
             releaseWriteConnection(conn);
         });
 
-        RESULT_DIRECT_RETURN(conn->Execute(sql));
+        RESULT_DIRECT_RETURN(conn->Execute(sql_statement));
     }
 
-    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) {
+    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) {
+        auto sql_statement = SQLStatement(sql);
+        RESULT_DIRECT_RETURN(Execute(sql_statement));
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const SQLStatement& sql_statement) {
 #if defined(ORMXX_BUILD_TESTS)
-        addSQLStringToHistory(sql);
+        addSQLStatementToHistory(sql_statement);
 #endif
 
         if (conn_ != nullptr) {
-            RESULT_DIRECT_RETURN(conn_->ExecuteQuery(sql));
+            RESULT_DIRECT_RETURN(conn_->ExecuteQuery(sql_statement));
         }
 
         RESULT_VALUE_OR_RETURN(auto* conn, getReadConnection());
@@ -221,16 +226,21 @@ public:
             releaseReadConnection(conn);
         });
 
-        RESULT_DIRECT_RETURN(conn->ExecuteQuery(sql));
+        RESULT_DIRECT_RETURN(conn->ExecuteQuery(sql_statement));
     }
 
-    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) {
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) {
+        auto sql_statement = SQLStatement(sql);
+        RESULT_DIRECT_RETURN(ExecuteQuery(sql_statement));
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const SQLStatement& sql_statement) {
 #if defined(ORMXX_BUILD_TESTS)
-        addSQLStringToHistory(sql);
+        addSQLStatementToHistory(sql_statement);
 #endif
 
         if (conn_ != nullptr) {
-            RESULT_DIRECT_RETURN(conn_->ExecuteUpdate(sql));
+            RESULT_DIRECT_RETURN(conn_->ExecuteUpdate(sql_statement));
         }
 
         RESULT_VALUE_OR_RETURN(auto* conn, getWriteConnection());
@@ -238,7 +248,12 @@ public:
             releaseWriteConnection(conn);
         });
 
-        RESULT_DIRECT_RETURN(conn->ExecuteUpdate(sql));
+        RESULT_DIRECT_RETURN(conn->ExecuteUpdate(sql_statement));
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) {
+        auto sql_statement = SQLStatement(sql);
+        RESULT_DIRECT_RETURN(ExecuteUpdate(sql_statement));
     }
 
     template <typename T>
@@ -414,19 +429,19 @@ protected:
 
 #if defined(ORMXX_BUILD_TESTS)
 private:
-    void addSQLStringToHistory(const std::string& sql_string) {
-        sql_string_history_.push_back(sql_string);
+    void addSQLStatementToHistory(const SQLStatement& sql_statement) {
+        sql_statement_history_.push_back(sql_statement);
     }
 
-    const std::vector<std::string>& getSQLStringHistory() const {
-        return sql_string_history_;
+    const std::vector<SQLStatement>& getSQLStatementHistory() const {
+        return sql_statement_history_;
     }
 
-    const std::string& getLastSQLString() const {
-        return sql_string_history_.back();
+    const SQLStatement& getLastSQLStatement() const {
+        return sql_statement_history_.back();
     }
 
-    std::vector<std::string> sql_string_history_{};
+    std::vector<SQLStatement> sql_statement_history_{};
 #endif
 };
 

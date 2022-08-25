@@ -72,7 +72,7 @@ TEST_F(ORMXXFuzzTest, escape_characters) {
         auto res = orm->Insert(&user);
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLString();
+        auto sql = orm->getLastSQLStatement().GetSQLString();
         SNAPSHOT(sql);
     }
 
