@@ -1,5 +1,5 @@
-#ifndef ORMXX_SQL_SQL_STRING_H
-#define ORMXX_SQL_SQL_STRING_H
+#ifndef ORMXX_INTERFACE_SQL_STATEMENT_H
+#define ORMXX_INTERFACE_SQL_STATEMENT_H
 
 #include <string>
 #include <variant>
@@ -9,7 +9,7 @@
 
 namespace ormxx {
 
-class SQLString {
+class SQLStatement {
 public:
     struct Field {
         internal::FieldTypeStruct field_type;
@@ -44,4 +44,4 @@ private:
 
 }  // namespace ormxx
 
-#endif  // ORMXX_SQL_SQL_STRING_H
+#endif  // ORMXX_INTERFACE_SQL_STATEMENT_H
