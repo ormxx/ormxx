@@ -17,13 +17,9 @@
 #include "./sql/generate_insert_sql.h"
 #include "./sql/generate_select_sql.h"
 #include "./sql/generate_update_sql.h"
-#include "./sql/sql_string.h"
 #include "./sql/sql_utility.h"
 
-#include "./interface/connection.h"       // IWYU pragma: export
-#include "./interface/execute_result.h"   // IWYU pragma: export
 #include "./interface/index.h"            // IWYU pragma: export
-#include "./interface/result.h"           // IWYU pragma: export
 #include "./internal/inject_utility.h"    // IWYU pragma: export
 #include "./internal/macros.h"            // IWYU pragma: export
 #include "./internal/result_to_entity.h"  // IWYU pragma: export

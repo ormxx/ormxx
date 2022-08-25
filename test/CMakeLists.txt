@@ -39,7 +39,7 @@ file(GLOB UNITTEST_FILE
     "ormxx/*_test.cc"
     "ormxx/adaptor/mysql/*_test.cc"
     "ormxx/internal/*_test.cc"
-    "ormxx/sql/*_test.cc"
+    "ormxx/interface/*_test.cc"
 )
 add_executable(
     unit_test
