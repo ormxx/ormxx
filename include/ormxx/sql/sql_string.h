@@ -24,6 +24,11 @@ public:
         }
     }
 
+    void SetSQLString(const std::string& sql, const std::vector<Field>& fields = {}) {
+        sql_ = sql;
+        fields_ = fields;
+    }
+
     const std::string& GetSQLString() const {
         return sql_;
     }
