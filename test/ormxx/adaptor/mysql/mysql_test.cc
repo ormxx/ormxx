@@ -7,6 +7,7 @@
 #include "ormxx/ormxx.h"
 
 #include "../../get_orm.h"
+#include "../../model/user.h"
 
 using namespace ormxx;
 using namespace ormxx::test;
@@ -123,6 +124,111 @@ SET `event_body` = '4';
 
     {
         auto res = orm->Execute(fmt::format("DROP TABLE IF EXISTS `{}`;", kTableName));
+        EXPECT_TRUE(res.IsOK());
+    }
+}
+
+TEST_F(MySQLClientTest, PreparedStatement) {
+    auto* orm = GetORMXX();
+    EXPECT_FALSE(orm == nullptr);
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    sql::Connection* conn = nullptr;
+
+    {
+        auto res = orm->getConnection();
+        ASSERT_TRUE(res.IsOK());
+        conn = static_cast<adaptor::mysql::MySQLConnection*>(res.Value())->connection_;
+    }
+
+    {
+        auto* s = conn->prepareStatement("INSERT INTO `user` (`name`) VALUES (?)");
+
+        {
+            s->clearParameters();
+            s->setString(1, R"(
+{
+        "main": "659733",
+        "t": "{\"e\":\"3-71\",\"c\":\"s:5\",\"i\":\"60\"}"
+}
+        )");
+
+            try {
+                auto res = s->execute();
+                EXPECT_FALSE(res);
+            } catch (std::exception& e) {
+                ASSERT_TRUE(false);
+            }
+        }
+
+        {
+            s->clearParameters();
+            s->setString(1, R"(
+{
+        "main": "6597322\\\\\\\\",
+        "t": "{\"e\":\"3-72\",\"c\":\"s:5\",\"i\":\"60\"}"
+}
+        )");
+
+            try {
+                auto res = s->execute();
+                EXPECT_FALSE(res);
+            } catch (std::exception& e) {
+                ASSERT_TRUE(false);
+            }
+        }
+
+        delete s;
+    }
+
+    {
+        auto* s = conn->prepareStatement("SELECT `name` FROM `user` WHERE `name` LIKE ?");
+
+        {
+            s->clearParameters();
+            s->setString(1, R"(%\\"e\\"%)");
+
+            try {
+                auto* res = s->executeQuery();
+                ASSERT_EQ(res->rowsCount(), 2);
+
+                res->next();
+                std::string first_name = res->getString(1);
+                std::string expected_first_name = std::string(R"(
+{
+        "main": "6597322\\\\\\\\",
+        "t": "{\"e\":\"3-72\",\"c\":\"s:5\",\"i\":\"60\"}"
+}
+        )");
+
+                res->next();
+                std::string second_name = res->getString("name");
+                std::string expected_second_name = std::string(R"(
+{
+        "main": "659733",
+        "t": "{\"e\":\"3-71\",\"c\":\"s:5\",\"i\":\"60\"}"
+}
+        )");
+
+            } catch (std::exception& e) {
+                ASSERT_TRUE(false);
+            }
+        }
+
+        delete s;
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
         EXPECT_TRUE(res.IsOK());
     }
 }

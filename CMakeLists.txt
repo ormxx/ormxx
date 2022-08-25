@@ -6,6 +6,8 @@ project(ormxx VERSION 0.0.8)
 
 # libmysqlcppconn-dev
 find_package(mysqlcppconn)
+# libmysqlclient-dev
+# find_package(mysqlclient)
 # libfmt-dev
 find_package(fmt)
 
