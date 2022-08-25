@@ -35,7 +35,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-access-control")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DORMXX_BUILD_TESTS")
 
-file(GLOB UNITTEST_FILE "ormxx/*_test.cc" "ormxx/adaptor/mysql/*_test.cc" "ormxx/internal/*_test.cc")
+file(GLOB UNITTEST_FILE
+    "ormxx/*_test.cc"
+    "ormxx/adaptor/mysql/*_test.cc"
+    "ormxx/internal/*_test.cc"
+    "ormxx/sql/*_test.cc"
+)
 add_executable(
     unit_test
     ${UNITTEST_FILE}

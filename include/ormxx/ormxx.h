@@ -17,6 +17,7 @@
 #include "./sql/generate_insert_sql.h"
 #include "./sql/generate_select_sql.h"
 #include "./sql/generate_update_sql.h"
+#include "./sql/sql_string.h"
 #include "./sql/sql_utility.h"
 
 #include "./interface/connection.h"       // IWYU pragma: export
