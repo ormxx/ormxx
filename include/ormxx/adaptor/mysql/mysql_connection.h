@@ -105,37 +105,55 @@ public:
         }
     }
 
-    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql, const std::string& schema) {
+    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const SQLStatement& sql_statement, const std::string& schema) {
         try {
             if (!schema.empty()) {
                 connection_->setSchema(schema);
             }
 
-            std::unique_ptr<sql::PreparedStatement> statement(connection_->prepareStatement(sql));
+            std::unique_ptr<sql::PreparedStatement> statement(
+                    connection_->prepareStatement(sql_statement.GetSQLString()));
+            RESULT_VALUE_OR_RETURN(statement, fillStatementField(std::move(statement), sql_statement));
+
             bool execute_success = statement->execute();
 
             auto res = std::unique_ptr<ExecuteResult>(nullptr);
             res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(execute_success)));
             return res;
         } catch (std::exception& e) {
-            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
-                               .WithErrorMessage(fmt::format("MySQL Execute failed. [err={}] [sql={}]", e.what(), sql))
-                               .Build();
+            auto res =
+                    Result::Builder(Result::ErrorCode::ExecuteError)
+                            .WithErrorMessage(fmt::format(
+                                    "MySQL Execute failed. [err={}] [sql={}]", e.what(), sql_statement.GetSQLString()))
+                            .Build();
             RESULT_DIRECT_RETURN(res);
         }
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql, const std::string& schema) {
+        auto sql_statement = SQLStatement(sql);
+        RESULT_DIRECT_RETURN(Execute(sql_statement, schema));
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> Execute(const SQLStatement& sql_statement) override {
+        RESULT_DIRECT_RETURN(Execute(sql_statement, schema_));
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) override {
         RESULT_DIRECT_RETURN(Execute(sql, schema_));
     }
 
-    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql, const std::string& schema) {
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const SQLStatement& sql_statement,
+                                                          const std::string& schema) {
         try {
             if (!schema.empty()) {
                 connection_->setSchema(schema);
             }
 
-            std::unique_ptr<sql::PreparedStatement> statement(connection_->prepareStatement(sql));
+            std::unique_ptr<sql::PreparedStatement> statement(
+                    connection_->prepareStatement(sql_statement.GetSQLString()));
+            RESULT_VALUE_OR_RETURN(statement, fillStatementField(std::move(statement), sql_statement));
+
             auto* result_set = statement->executeQuery();
 
             auto res = std::unique_ptr<ExecuteResult>(nullptr);
@@ -143,24 +161,38 @@ public:
             return res;
         } catch (std::exception& e) {
             auto res = Result::Builder(Result::ErrorCode::ExecuteError)
-                               .WithErrorMessage(
-                                       fmt::format("MySQL ExecuteQuery failed. [err={}] [sql={}]", e.what(), sql))
+                               .WithErrorMessage(fmt::format("MySQL ExecuteQuery failed. [err={}] [sql={}]",
+                                                             e.what(),
+                                                             sql_statement.GetSQLString()))
                                .Build();
             RESULT_DIRECT_RETURN(res);
         }
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql, const std::string& schema) {
+        auto sql_statement = SQLStatement(sql);
+        RESULT_DIRECT_RETURN(ExecuteQuery(sql_statement, schema));
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const SQLStatement& sql_statement) override {
+        RESULT_DIRECT_RETURN(ExecuteQuery(sql_statement, schema_));
     }
 
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) override {
         RESULT_DIRECT_RETURN(ExecuteQuery(sql, schema_));
     }
 
-    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql, const std::string& schema) {
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const SQLStatement& sql_statement,
+                                                           const std::string& schema) {
         try {
             if (!schema.empty()) {
                 connection_->setSchema(schema);
             }
 
-            std::unique_ptr<sql::PreparedStatement> statement(connection_->prepareStatement(sql));
+            std::unique_ptr<sql::PreparedStatement> statement(
+                    connection_->prepareStatement(sql_statement.GetSQLString()));
+            RESULT_VALUE_OR_RETURN(statement, fillStatementField(std::move(statement), sql_statement));
+
             int rows_affected = statement->executeUpdate();
 
             auto res = std::unique_ptr<ExecuteResult>(nullptr);
@@ -168,15 +200,61 @@ public:
             return res;
         } catch (std::exception& e) {
             auto res = Result::Builder(Result::ErrorCode::ExecuteError)
-                               .WithErrorMessage(
-                                       fmt::format("MySQL ExecuteUpdate failed. [err={}] [sql={}]", e.what(), sql))
+                               .WithErrorMessage(fmt::format("MySQL ExecuteUpdate failed. [err={}] [sql={}]",
+                                                             e.what(),
+                                                             sql_statement.GetSQLString()))
                                .Build();
             RESULT_DIRECT_RETURN(res);
         }
     }
 
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql, const std::string& schema) {
+        auto sql_statement = SQLStatement(sql);
+        RESULT_DIRECT_RETURN(ExecuteUpdate(sql_statement, schema));
+    }
+
+    ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const SQLStatement& sql_statement) override {
+        RESULT_DIRECT_RETURN(ExecuteUpdate(sql_statement, schema_));
+    }
+
     ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) override {
         RESULT_DIRECT_RETURN(ExecuteUpdate(sql, schema_));
+    }
+
+private:
+    ResultOr<std::unique_ptr<sql::PreparedStatement>> fillStatementField(
+            std::unique_ptr<sql::PreparedStatement> statement, const SQLStatement& sql_statement) {
+        using CXXFieldType = internal::CXXFieldType;
+
+        const auto& fields = sql_statement.GetFields();
+
+        for (size_t i = 1; i <= fields.size(); ++i) {
+            const auto& field = fields[i - 1];
+            const auto& t = field.field_type.cxx_field_type;
+
+            if (t == CXXFieldType::BOOLEAN) {
+                statement->setBoolean(i, std::get<bool>(field.value));
+            } else if (t == CXXFieldType::INT) {
+                statement->setInt(i, std::get<int32_t>(field.value));
+            } else if (t == CXXFieldType::UINT) {
+                statement->setUInt(i, std::get<uint32_t>(field.value));
+            } else if (t == CXXFieldType::INT64) {
+                statement->setInt64(i, std::get<int64_t>(field.value));
+            } else if (t == CXXFieldType::UINT64) {
+                statement->setUInt64(i, std::get<uint64_t>(field.value));
+            } else if (t == CXXFieldType::DOUBLE) {
+                statement->setDouble(i, std::get<double>(field.value));
+            } else if (t == CXXFieldType::STRING) {
+                statement->setString(i, std::get<std::string>(field.value));
+            } else {
+                auto res = Result::Builder(Result::ErrorCode::UnSupportTypeError)
+                                   .WithErrorMessage("unsupported type with unknown type field")
+                                   .Build();
+                RESULT_DIRECT_RETURN(res);
+            }
+        }
+
+        return statement;
     }
 
 private:

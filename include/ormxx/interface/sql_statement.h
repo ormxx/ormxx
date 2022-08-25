@@ -16,6 +16,11 @@ public:
         std::variant<bool, int32_t, uint32_t, int64_t, uint64_t, double, std::string> value;
     };
 
+public:
+    SQLStatement() {}
+    SQLStatement(const std::string& sql, const std::vector<Field>& fields = {}) : sql_(sql), fields_(fields) {}
+    virtual ~SQLStatement() {}
+
     void Append(const std::string& sql, const std::vector<Field>& fields = {}) {
         sql_ += sql;
 
