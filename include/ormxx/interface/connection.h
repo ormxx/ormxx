@@ -5,6 +5,7 @@
 
 #include "./execute_result.h"
 #include "./result.h"
+#include "./sql_statement.h"
 
 namespace ormxx {
 
@@ -22,10 +23,13 @@ public:
     virtual Result Commit() = 0;
     virtual Result Rollback() = 0;
 
+    virtual ResultOr<std::unique_ptr<ExecuteResult>> Execute(const SQLStatement& sql_statement) = 0;
     virtual ResultOr<std::unique_ptr<ExecuteResult>> Execute(const std::string& sql) = 0;
 
+    virtual ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const SQLStatement& sql_statement) = 0;
     virtual ResultOr<std::unique_ptr<ExecuteResult>> ExecuteQuery(const std::string& sql) = 0;
 
+    virtual ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const SQLStatement& sql_statement) = 0;
     virtual ResultOr<std::unique_ptr<ExecuteResult>> ExecuteUpdate(const std::string& sql) = 0;
 };
 
