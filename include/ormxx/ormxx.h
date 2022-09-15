@@ -107,12 +107,12 @@ public:
             return Where(&t);
         }
 
-        QueryBuilder& Limit(uint64_t limit) {
+        QueryBuilder& Limit(uint64_t limit = 1) {
             sql_data_.sql_limit = fmt::format("{}", limit);
             return *this;
         }
 
-        QueryBuilder& Offset(uint64_t offset) {
+        QueryBuilder& Offset(uint64_t offset = 1) {
             sql_data_.sql_offset = fmt::format("{}", offset);
             return *this;
         }
