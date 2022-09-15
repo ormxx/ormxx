@@ -98,6 +98,7 @@ public:
                 &t, options, [&query_fields_builder]([[maybe_unused]] auto&& field, auto&& options) {
                     query_fields_builder.origin_field_name = options.origin_field_name;
                     query_fields_builder.field_name = options.field_name;
+                    query_fields_builder.field_type = options.field_type;
                 });
 
         return query_fields_builder;

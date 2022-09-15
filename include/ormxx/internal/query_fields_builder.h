@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "../options/field_type.h"
+
 namespace ormxx::internal {
 
 template <typename T>
@@ -14,6 +16,7 @@ public:
 private:
     std::string origin_field_name{""};
     std::string field_name{""};
+    FieldTypeStruct field_type{};
 };
 
 }  // namespace ormxx::internal
