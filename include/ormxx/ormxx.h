@@ -74,7 +74,7 @@ public:
         ~QueryBuilder() {}
 
         template <typename T>
-        QueryBuilder& AndWhere(T* t) {
+        QueryBuilder& And(T* t) {
             std::string prefix = sql_data_.sql_where.Empty() ? "" : " AND ";
 
             auto w = internal::SQLUtility::GenerateWhereSQLStatement(t);
@@ -85,12 +85,12 @@ public:
         }
 
         template <typename T>
-        QueryBuilder& AndWhere(T&& t) {
-            return AndWhere(&t);
+        QueryBuilder& And(T&& t) {
+            return And(&t);
         }
 
         template <typename T>
-        QueryBuilder& OrWhere(T* t) {
+        QueryBuilder& Or(T* t) {
             std::string prefix = sql_data_.sql_where.Empty() ? "" : " OR ";
 
             auto w = internal::SQLUtility::GenerateWhereSQLStatement(t);
@@ -101,13 +101,13 @@ public:
         }
 
         template <typename T>
-        QueryBuilder& OrWhere(T&& t) {
-            return OrWhere(&t);
+        QueryBuilder& Or(T&& t) {
+            return Or(&t);
         }
 
         template <typename T>
         QueryBuilder& Where(T* t) {
-            return AndWhere(t);
+            return And(t);
         }
 
         template <typename T>
