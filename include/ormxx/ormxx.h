@@ -164,6 +164,11 @@ public:
     //     return QueryBuilder(this);
     // }
 
+    template <typename T>
+    auto GetQueryFieldsBuilder() {
+        return internal::InjectEntrance::GetQueryFieldsBuilder<T>();
+    }
+
 protected:
     struct connectionPoolNode {
         std::mutex mutex_;

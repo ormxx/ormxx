@@ -403,3 +403,9 @@ TEST_F(ORMXXTest, transaction_test) {
         EXPECT_TRUE(res.IsOK());
     }
 }
+
+TEST_F(ORMXXTest, QueryFieldsBuilder) {
+    auto* orm = GetORMXX();
+
+    { auto u = orm->GetQueryFieldsBuilder<model::User>(); }
+}

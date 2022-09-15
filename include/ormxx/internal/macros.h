@@ -19,6 +19,7 @@
 #include "./create_entrance_field_options.h"
 #include "./inject_entrance.h"
 #include "./macros_utility.h"
+#include "./query_fields_builder.h"
 #include "./struct_schema_entrance_options.h"
 #include "./utils.h"
 
@@ -33,6 +34,11 @@ public:                                                                 \
     const decltype(__ORMXX_Struct::Field)& Get##Field() const {         \
         return this->Field;                                             \
     }
+
+#define __ORMXX_STRUCT_SCHEMA_DECLARE_QUERY_FIELDS_BUILDER(Field)                                            \
+    ::ormxx::internal::QueryFieldsBuilder<decltype(BaseStruct::Field)> Field{                                \
+            ::ormxx::internal::InjectUtility::GetQueryFieldBuilder<BaseStruct, decltype(BaseStruct::Field)>( \
+                    __ORMXX_STR(Field))};
 
 #define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                          \
 private:                                                                                        \
@@ -57,6 +63,13 @@ private:                                                                        
     }                                                                                           \
                                                                                                 \
     __ORMXX_EXPEND_FUNC_(__ORMXX_STRUCT_SCHEMA_DECLARE_SET_AND_GET_FUNCTION, __VA_ARGS__)       \
+                                                                                                \
+    class __ORMXX_QueryFieldsBuilder {                                                          \
+        using BaseStruct = Struct;                                                              \
+                                                                                                \
+    public:                                                                                     \
+        __ORMXX_EXPEND_FUNC_(__ORMXX_STRUCT_SCHEMA_DECLARE_QUERY_FIELDS_BUILDER, __VA_ARGS__)   \
+    };                                                                                          \
                                                                                                 \
     template <typename T,                                                                       \
               std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,    \

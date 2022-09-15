@@ -40,6 +40,11 @@ public:
         }
     }
 
+    template <typename T>
+    static auto GetQueryFieldsBuilder() {
+        return typename T::__ORMXX_QueryFieldsBuilder();
+    }
+
     template <typename T, std::enable_if_t<has_ormxx_inject_v<T>, bool> = true>
     static auto& GetIsSetMap(T* t) {
         return t->__ORMXX_GetIsSetMap();
