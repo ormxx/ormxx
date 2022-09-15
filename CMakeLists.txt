@@ -27,7 +27,7 @@ include(FetchContent)
 FetchContent_Declare(
     result_cpp
     GIT_REPOSITORY https://github.com/Dup4/result-cpp.git
-    GIT_TAG v0.0.13
+    GIT_TAG v0.0.14
 )
 
 FetchContent_MakeAvailable(result_cpp)
