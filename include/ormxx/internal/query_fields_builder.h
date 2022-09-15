@@ -14,8 +14,6 @@ public:
 private:
     std::string origin_field_name{""};
     std::string field_name{""};
-
-    T* t{nullptr};
 };
 
 }  // namespace ormxx::internal
