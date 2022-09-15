@@ -310,7 +310,10 @@ TEST_F(ORMXXTest, first_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string(R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = ?) LIMIT 1;)"));
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = ?) LIMIT 1;)"));
 
         auto user = res.Value();
         EXPECT_EQ(user.GetID(), 1);
@@ -350,7 +353,10 @@ TEST_F(ORMXXTest, find_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string(R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`name` = ?);)"));
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`name` = ?);)"));
 
         auto s_vec = std::move(res.Value());
         EXPECT_EQ(s_vec.size(), 10);
