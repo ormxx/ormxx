@@ -10,6 +10,7 @@ class QueryFieldsBuilder {
 public:
     QueryFieldsBuilder() = default;
 
+public:
 private:
     std::string origin_field_name{""};
     std::string field_name{""};

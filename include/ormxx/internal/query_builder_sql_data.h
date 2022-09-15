@@ -3,15 +3,17 @@
 
 #include <string>
 
+#include "../interface/sql_statement.h"
+
 namespace ormxx::internal {
 
 struct QueryBuilderSQLData {
-    std::string sql_from{""};
-    std::string sql_select{""};
-    std::string sql_where{""};
+    SQLStatement sql_from{""};
+    SQLStatement sql_select{""};
+    SQLStatement sql_where{""};
 
-    std::string sql_limit{""};
-    std::string sql_offset{""};
+    SQLStatement sql_limit{""};
+    SQLStatement sql_offset{""};
 };
 
 }  // namespace ormxx::internal

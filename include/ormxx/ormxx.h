@@ -16,7 +16,7 @@
 #include "./sql/generate_drop_table_sql.h"
 #include "./sql/generate_insert_sql.h"
 #include "./sql/generate_insert_sql_statement.h"
-#include "./sql/generate_select_sql.h"
+#include "./sql/generate_select_sql_statement.h"
 #include "./sql/generate_update_sql.h"
 #include "./sql/sql_utility.h"
 
@@ -67,7 +67,7 @@ public:
         QueryBuilder(ORMXX* ormxx) : ormxx_(ormxx) {
             if constexpr (!std::is_void_v<Struct>) {
                 const auto table_options_ = internal::InjectEntrance::GetTableOptions<Struct>();
-                sql_data_.sql_from = fmt::format("`{}`", table_options_.table_name);
+                sql_data_.sql_from.SetSQLString(fmt::format("`{}`", table_options_.table_name));
             }
         }
 
@@ -75,8 +75,12 @@ public:
 
         template <typename T>
         QueryBuilder& AndWhere(T* t) {
-            std::string prefix = sql_data_.sql_where.empty() ? "" : " AND ";
-            sql_data_.sql_where += fmt::format("{}({})", prefix, internal::SQLUtility::GenerateWhereSQLString(t));
+            std::string prefix = sql_data_.sql_where.Empty() ? "" : " AND ";
+
+            auto w = internal::SQLUtility::GenerateWhereSQLStatement(t);
+            sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
+            sql_data_.sql_where.AppendFields(w.GetFields());
+
             return *this;
         }
 
@@ -87,8 +91,12 @@ public:
 
         template <typename T>
         QueryBuilder& OrWhere(T* t) {
-            std::string prefix = sql_data_.sql_where.empty() ? "" : " OR ";
-            sql_data_.sql_where += fmt::format("{}({})", prefix, internal::SQLUtility::GenerateWhereSQLString(t));
+            std::string prefix = sql_data_.sql_where.Empty() ? "" : " OR ";
+
+            auto w = internal::SQLUtility::GenerateWhereSQLStatement(t);
+            sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
+            sql_data_.sql_where.AppendFields(w.GetFields());
+
             return *this;
         }
 
@@ -123,10 +131,10 @@ public:
 
             auto _sql_data = sql_data_;
             _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
-            _sql_data.sql_limit = "1";
+            _sql_data.sql_limit.SetSQLString("1");
 
-            RESULT_VALUE_OR_RETURN(const auto sql, GenerateSelectSQL(_sql_data));
-            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_->ExecuteQuery(sql));
+            RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateSelectSQLStatement(_sql_data));
+            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_->ExecuteQuery(sql_statement));
 
             RESULT_OK_OR_RETURN(internal::ResultToEntity(*execute_res, s));
 
@@ -140,8 +148,8 @@ public:
             auto _sql_data = sql_data_;
             _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
 
-            RESULT_VALUE_OR_RETURN(const auto sql, GenerateSelectSQL(_sql_data));
-            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_->ExecuteQuery(sql));
+            RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateSelectSQLStatement(_sql_data));
+            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_->ExecuteQuery(sql_statement));
 
             std::vector<Struct> s_vec;
             RESULT_OK_OR_RETURN(internal::ResultToEntity(*execute_res, s_vec));

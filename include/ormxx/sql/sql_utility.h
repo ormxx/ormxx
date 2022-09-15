@@ -5,6 +5,8 @@
 
 #include "fmt/core.h"
 
+#include "../interface/sql_statement.h"
+#include "../internal/field_to_sql_statement_field_value.h"
 #include "../internal/field_to_string.h"
 #include "../internal/inject_entrance.h"
 #include "../internal/inject_utility.h"
@@ -34,18 +36,24 @@ public:
     }
 
     template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
-    static std::string GenerateWhereSQLString(T* t) {
+    static SQLStatement GenerateWhereSQLStatement(T* t) {
         const auto table_options = internal::InjectEntrance::GetTableOptions(t);
 
-        std::string sql = "";
+        SQLStatement sql_statement{};
 
         auto options = internal::StructSchemaEntranceOptionsBuilder().WithVisitField().WithVisitFieldByIsSet().Build();
-        internal::InjectEntrance::StructSchemaEntrance(t, options, [&sql](auto&& field, auto&& options) {
-            std::string prefix = sql.empty() ? "" : " AND ";
-            sql += fmt::format("{}`{}` = {}", prefix, options.field_name, internal::FieldToString(field));
+        internal::InjectEntrance::StructSchemaEntrance(t, options, [&sql_statement](auto&& field, auto&& options) {
+            std::string prefix = sql_statement.GetSQLString().empty() ? "" : " AND ";
+
+            auto f = SQLStatement::Field{};
+            f.field_type = options.field_type;
+            f.value = internal::FieldToSQLStatementFieldValue(field);
+
+            sql_statement.AppendSQLString(fmt::format("{}`{}` = ?", std::move(prefix), options.field_name));
+            sql_statement.AppendField(std::move(f));
         });
 
-        return sql;
+        return sql_statement;
     }
 };
 

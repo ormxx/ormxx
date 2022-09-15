@@ -93,6 +93,10 @@ public:
         return fields_;
     }
 
+    bool Empty() const {
+        return sql_.empty() && fields_.empty();
+    }
+
 private:
     std::string sql_{""};
     std::vector<Field> fields_{};
