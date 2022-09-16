@@ -66,7 +66,7 @@ public:
     template <typename Struct = void>
     class QueryBuilder {
     public:
-        QueryBuilder(ORMXX* ormxx) : ormxx_(ormxx) {
+        QueryBuilder(ORMXX& ormxx) : ormxx_(ormxx) {
             if constexpr (!std::is_void_v<Struct>) {
                 const auto table_options_ = internal::InjectEntrance::GetTableOptions<Struct>();
                 sql_data_.sql_from.SetSQLString(fmt::format("`{}`", table_options_.table_name));
@@ -177,7 +177,7 @@ public:
             _sql_data.sql_limit.SetSQLString("1");
 
             RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateSelectSQLStatement(_sql_data));
-            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_->ExecuteQuery(sql_statement));
+            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_.ExecuteQuery(sql_statement));
 
             RESULT_OK_OR_RETURN(internal::ResultToEntity(*execute_res, s));
 
@@ -192,7 +192,7 @@ public:
             _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
 
             RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateSelectSQLStatement(_sql_data));
-            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_->ExecuteQuery(sql_statement));
+            RESULT_VALUE_OR_RETURN(auto execute_res, ormxx_.ExecuteQuery(sql_statement));
 
             std::vector<Struct> s_vec;
             RESULT_OK_OR_RETURN(internal::ResultToEntity(*execute_res, s_vec));
@@ -202,12 +202,12 @@ public:
 
     private:
         internal::QueryBuilderSQLData sql_data_{};
-        ORMXX* ormxx_{nullptr};
+        ORMXX& ormxx_;
     };
 
     template <typename T>
     QueryBuilder<T> NewQueryBuilder() {
-        return QueryBuilder<T>(this);
+        return QueryBuilder<T>(*this);
     }
 
     // QueryBuilder<void> NewQueryBuilder() {
