@@ -326,7 +326,10 @@ TEST_F(ORMXXTest, first_test) {
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string(R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = ? AND `name` = ?) LIMIT 1;)"));
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = ? AND `name` = ?) LIMIT 1;)"));
 
         auto user = res.Value();
         EXPECT_EQ(user.GetID(), 1);
@@ -420,5 +423,59 @@ TEST_F(ORMXXTest, transaction_test) {
 TEST_F(ORMXXTest, QueryFieldsBuilder) {
     auto* orm = GetORMXX();
 
-    { auto u = orm->GetQueryFieldsBuilder<model::User>(); }
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        for (int i = 1; i <= 20; i++) {
+            auto user = model::User().SetID(i).SetName("test").SetAge(i);
+            auto insert_res = orm->Insert(&user);
+            EXPECT_TRUE(insert_res.IsOK());
+        }
+    }
+
+    {
+        auto u = orm->NewQueryFieldsBuilder<model::User>();
+        auto q = orm->NewQueryBuilder<model::User>();
+
+        auto res = q.Where(u.Age.Between(5, 6), u.Name.Eq("test")).Find();
+        EXPECT_TRUE(res.IsOK());
+
+        auto sql = orm->getLastSQLStatement().GetSQLString();
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE ((`age` BETWEEN ? AND ?) AND (`name` = ?));)"));
+
+        auto s_vec = std::move(res.Value());
+        EXPECT_EQ(s_vec.size(), 2);
+        EXPECT_EQ(s_vec[0].GetAge(), 5);
+        EXPECT_EQ(s_vec[1].GetAge(), 6);
+    }
+
+    {
+        auto u = orm->NewQueryFieldsBuilder<model::User>();
+        auto q = orm->NewQueryBuilder<model::User>();
+
+        auto res = q.Where(u.Age.Between(9, 10)).Order(u.Age.Desc()).Find();
+        EXPECT_TRUE(res.IsOK());
+
+        auto sql = orm->getLastSQLStatement().GetSQLString();
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE ((`age` BETWEEN ? AND ?)) ORDER BY `age` DESC;)"));
+
+        auto s_vec = std::move(res.Value());
+        EXPECT_EQ(s_vec.size(), 2);
+        EXPECT_EQ(s_vec[0].GetAge(), 10);
+        EXPECT_EQ(s_vec[1].GetAge(), 9);
+    }
 }

@@ -101,6 +101,8 @@ public:
                     query_fields_builder.field_type = options.field_type;
                 });
 
+        query_fields_builder.init();
+
         return query_fields_builder;
     }
 

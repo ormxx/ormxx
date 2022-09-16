@@ -10,6 +10,7 @@
 #include "../internal/field_to_string.h"
 #include "../internal/inject_entrance.h"
 #include "../internal/inject_utility.h"
+#include "../internal/query_fields_builder.h"
 #include "../internal/result_to_field.h"
 #include "../types_check/has_ormxx_inject.h"
 
@@ -54,6 +55,47 @@ public:
         });
 
         return sql_statement;
+    }
+
+    template <typename... QueryFieldsBuilder>
+    static SQLStatement GenerateWhereSQLStatement(QueryFieldsBuilder&&... q) {
+        SQLStatement s{};
+
+        const auto f = [&s](auto&& q) -> bool {
+            std::string prefix = s.Empty() ? "" : " AND ";
+            const auto& ss = getSQLStatementFromQueryFieldsBuilder(q);
+            s.AppendSQLString(fmt::format("{}{}", prefix, ss.GetSQLString()));
+            s.AppendFields(ss.GetFields());
+
+            return true;
+        };
+
+        (f(std::forward<QueryFieldsBuilder>(q)) && ...);
+
+        return s;
+    }
+
+    template <typename... QueryFieldsBuilder>
+    static SQLStatement GenerateOrderSQLStatement(QueryFieldsBuilder&&... q) {
+        SQLStatement s{};
+
+        const auto f = [&s](auto&& q) -> bool {
+            std::string prefix = s.Empty() ? "" : ", ";
+            const auto& ss = getSQLStatementFromQueryFieldsBuilder(q);
+            s.AppendSQLString(fmt::format("{}{}", prefix, ss.GetSQLString()));
+
+            return true;
+        };
+
+        (f(std::forward<QueryFieldsBuilder>(q)) && ...);
+
+        return s;
+    }
+
+private:
+    template <typename T>
+    static const SQLStatement& getSQLStatementFromQueryFieldsBuilder(const QueryFieldsBuilder<T>& q) {
+        return q.getSQLStatement();
     }
 };
 

@@ -12,6 +12,7 @@ struct QueryBuilderSQLData {
     SQLStatement sql_select{""};
     SQLStatement sql_where{""};
 
+    SQLStatement sql_order{""};
     SQLStatement sql_limit{""};
     SQLStatement sql_offset{""};
 };

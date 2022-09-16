@@ -29,6 +29,11 @@ inline ResultOr<SQLStatement> GenerateSelectSQLStatement(const internal::QueryBu
         sql_statement.AppendFields(sql_data.sql_where.GetFields());
     }
 
+    if (!sql_data.sql_order.Empty()) {
+        sql_statement.AppendSQLString(fmt::format(" ORDER BY {}", sql_data.sql_order.GetSQLString()));
+        sql_statement.AppendFields(sql_data.sql_order.GetFields());
+    }
+
     if (!sql_data.sql_limit.Empty()) {
         sql_statement.AppendSQLString(fmt::format(" LIMIT {}", sql_data.sql_limit.GetSQLString()));
         sql_statement.AppendFields(sql_data.sql_limit.GetFields());

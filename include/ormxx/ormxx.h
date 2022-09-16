@@ -11,6 +11,7 @@
 
 #include "./internal/defer.h"
 #include "./internal/query_builder_sql_data.h"
+#include "./internal/query_fields_builder.h"
 #include "./sql/generate_create_table_sql.h"
 #include "./sql/generate_delete_sql.h"
 #include "./sql/generate_drop_table_sql.h"
@@ -19,6 +20,7 @@
 #include "./sql/generate_select_sql_statement.h"
 #include "./sql/generate_update_sql.h"
 #include "./sql/sql_utility.h"
+#include "./types_check/is_specialization.h"
 
 #include "./interface/index.h"            // IWYU pragma: export
 #include "./internal/inject_utility.h"    // IWYU pragma: export
@@ -71,9 +73,10 @@ public:
             }
         }
 
-        ~QueryBuilder() {}
+        virtual ~QueryBuilder() = default;
 
-        template <typename T>
+        template <typename T,
+                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
         QueryBuilder& And(T* t) {
             std::string prefix = sql_data_.sql_where.Empty() ? "" : " AND ";
 
@@ -84,12 +87,25 @@ public:
             return *this;
         }
 
-        template <typename T>
+        template <typename T,
+                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
         QueryBuilder& And(T&& t) {
             return And(&t);
         }
 
-        template <typename T>
+        template <typename... QueryFieldsBuilder>
+        QueryBuilder& And(QueryFieldsBuilder&&... q) {
+            std::string prefix = sql_data_.sql_where.Empty() ? "" : " AND ";
+
+            auto w = internal::SQLUtility::GenerateWhereSQLStatement(std::forward<QueryFieldsBuilder>(q)...);
+            sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
+            sql_data_.sql_where.AppendFields(w.GetFields());
+
+            return *this;
+        }
+
+        template <typename T,
+                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
         QueryBuilder& Or(T* t) {
             std::string prefix = sql_data_.sql_where.Empty() ? "" : " OR ";
 
@@ -100,19 +116,46 @@ public:
             return *this;
         }
 
-        template <typename T>
+        template <typename T,
+                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
         QueryBuilder& Or(T&& t) {
             return Or(&t);
         }
 
-        template <typename T>
+        template <typename... QueryFieldsBuilder>
+        QueryBuilder& Or(QueryFieldsBuilder&&... q) {
+            std::string prefix = sql_data_.sql_where.Empty() ? "" : " OR ";
+
+            auto w = internal::SQLUtility::GenerateWhereSQLStatement(std::forward<QueryFieldsBuilder>(q)...);
+            sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
+            sql_data_.sql_where.AppendFields(w.GetFields());
+
+            return *this;
+        }
+
+        template <typename T,
+                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
         QueryBuilder& Where(T* t) {
             return And(t);
         }
 
-        template <typename T>
+        template <typename T,
+                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
         QueryBuilder& Where(T&& t) {
             return Where(&t);
+        }
+
+        template <typename... QueryFieldsBuilder>
+        QueryBuilder& Where(QueryFieldsBuilder&&... q) {
+            return And(std::forward<QueryFieldsBuilder>(q)...);
+        }
+
+        template <typename... QueryFieldsBuilder>
+        QueryBuilder& Order(QueryFieldsBuilder&&... q) {
+            sql_data_.sql_order =
+                    internal::SQLUtility::GenerateOrderSQLStatement(std::forward<QueryFieldsBuilder>(q)...);
+
+            return *this;
         }
 
         QueryBuilder& Limit(uint64_t limit = 1) {
@@ -173,7 +216,7 @@ public:
     // }
 
     template <typename T>
-    auto GetQueryFieldsBuilder() {
+    auto NewQueryFieldsBuilder() {
         return internal::InjectEntrance::GetQueryFieldsBuilder<T>();
     }
 
