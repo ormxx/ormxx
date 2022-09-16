@@ -203,7 +203,6 @@ public:
     private:
         internal::QueryBuilderSQLData sql_data_{};
         ORMXX* ormxx_{nullptr};
-        Struct* t{nullptr};
     };
 
     template <typename T>
