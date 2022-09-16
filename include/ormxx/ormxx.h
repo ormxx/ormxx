@@ -63,7 +63,7 @@ public:
     };
 
 public:
-    template <typename Struct = void>
+    template <typename Struct>
     class QueryBuilder {
     public:
         QueryBuilder(ORMXX& ormxx) : ormxx_(ormxx) {
@@ -75,6 +75,7 @@ public:
 
         virtual ~QueryBuilder() = default;
 
+    public:
         template <typename T,
                   std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
         QueryBuilder& And(T* t) {
@@ -205,14 +206,11 @@ public:
         ORMXX& ormxx_;
     };
 
+public:
     template <typename T>
     QueryBuilder<T> NewQueryBuilder() {
         return QueryBuilder<T>(*this);
     }
-
-    // QueryBuilder<void> NewQueryBuilder() {
-    //     return QueryBuilder(this);
-    // }
 
     template <typename T>
     const auto& NewQueryFieldsBuilder() {
