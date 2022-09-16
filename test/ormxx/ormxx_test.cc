@@ -442,8 +442,8 @@ TEST_F(ORMXXTest, QueryFieldsBuilder) {
     }
 
     {
-        auto u = orm->NewQueryFieldsBuilder<model::User>();
         auto q = orm->NewQueryBuilder<model::User>();
+        auto u = q.NewColumnBuilder();
 
         auto res = q.Where(u.Age.Between(5, 6), u.Name.Eq("test")).Find();
         EXPECT_TRUE(res.IsOK());
@@ -461,8 +461,8 @@ TEST_F(ORMXXTest, QueryFieldsBuilder) {
     }
 
     {
-        auto u = orm->NewQueryFieldsBuilder<model::User>();
         auto q = orm->NewQueryBuilder<model::User>();
+        auto u = q.NewColumnBuilder();
 
         auto res = q.Where(u.Age.Between(9, 10)).Order(u.Age.Desc()).Find();
         EXPECT_TRUE(res.IsOK());
@@ -508,8 +508,8 @@ TEST_F(ORMXXTest, QueryFieldsBuilder1) {
     }
 
     {
-        auto u = orm->NewQueryFieldsBuilder<model::User>();
         auto q = orm->NewQueryBuilder<model::User>();
+        auto u = q.NewColumnBuilder();
 
         const std::string name = "test";
 

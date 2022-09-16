@@ -6,11 +6,11 @@
 #include "fmt/core.h"
 
 #include "../interface/sql_statement.h"
+#include "../internal/column_builder.h"
 #include "../internal/field_to_sql_statement_field_value.h"
 #include "../internal/field_to_string.h"
 #include "../internal/inject_entrance.h"
 #include "../internal/inject_utility.h"
-#include "../internal/query_fields_builder.h"
 #include "../internal/result_to_field.h"
 #include "../types_check/has_ormxx_inject.h"
 
@@ -94,8 +94,8 @@ public:
 
 private:
     template <typename T>
-    static const SQLStatement& getSQLStatementFromQueryFieldsBuilder(const QueryFieldsBuilder<T>& q) {
-        return q.getSQLStatement();
+    static const SQLStatement& getSQLStatementFromQueryFieldsBuilder(const ColumnBuilder<T>& c) {
+        return c.getSQLStatement();
     }
 };
 

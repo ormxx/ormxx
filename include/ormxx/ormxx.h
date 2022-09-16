@@ -9,9 +9,9 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "./internal/column_builder.h"
 #include "./internal/defer.h"
 #include "./internal/query_builder_sql_data.h"
-#include "./internal/query_fields_builder.h"
 #include "./sql/generate_create_table_sql.h"
 #include "./sql/generate_delete_sql.h"
 #include "./sql/generate_drop_table_sql.h"
@@ -76,8 +76,13 @@ public:
         virtual ~QueryBuilder() = default;
 
     public:
+        const auto& NewColumnBuilder() {
+            return internal::InjectEntrance::GetColumnBuilder<Struct>();
+        }
+
+    public:
         template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
+                  std::enable_if_t<!internal::is_specialization<T, internal::ColumnBuilder>::value, bool> = true>
         QueryBuilder& And(T* t) {
             std::string prefix = sql_data_.sql_where.Empty() ? "" : " AND ";
 
@@ -89,7 +94,7 @@ public:
         }
 
         template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
+                  std::enable_if_t<!internal::is_specialization<T, internal::ColumnBuilder>::value, bool> = true>
         QueryBuilder& And(T&& t) {
             return And(&t);
         }
@@ -106,7 +111,7 @@ public:
         }
 
         template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
+                  std::enable_if_t<!internal::is_specialization<T, internal::ColumnBuilder>::value, bool> = true>
         QueryBuilder& Or(T* t) {
             std::string prefix = sql_data_.sql_where.Empty() ? "" : " OR ";
 
@@ -118,16 +123,16 @@ public:
         }
 
         template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
+                  std::enable_if_t<!internal::is_specialization<T, internal::ColumnBuilder>::value, bool> = true>
         QueryBuilder& Or(T&& t) {
             return Or(&t);
         }
 
-        template <typename... QueryFieldsBuilder>
-        QueryBuilder& Or(QueryFieldsBuilder&&... q) {
+        template <typename... ColumnBuilder>
+        QueryBuilder& Or(ColumnBuilder&&... c) {
             std::string prefix = sql_data_.sql_where.Empty() ? "" : " OR ";
 
-            auto w = internal::SQLUtility::GenerateWhereSQLStatement(std::forward<QueryFieldsBuilder>(q)...);
+            auto w = internal::SQLUtility::GenerateWhereSQLStatement(std::forward<ColumnBuilder>(c)...);
             sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
             sql_data_.sql_where.AppendFields(w.GetFields());
 
@@ -135,26 +140,25 @@ public:
         }
 
         template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
+                  std::enable_if_t<!internal::is_specialization<T, internal::ColumnBuilder>::value, bool> = true>
         QueryBuilder& Where(T* t) {
             return And(t);
         }
 
         template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::QueryFieldsBuilder>::value, bool> = true>
+                  std::enable_if_t<!internal::is_specialization<T, internal::ColumnBuilder>::value, bool> = true>
         QueryBuilder& Where(T&& t) {
             return Where(&t);
         }
 
-        template <typename... QueryFieldsBuilder>
-        QueryBuilder& Where(QueryFieldsBuilder&&... q) {
-            return And(std::forward<QueryFieldsBuilder>(q)...);
+        template <typename... ColumnBuilder>
+        QueryBuilder& Where(ColumnBuilder&&... c) {
+            return And(std::forward<ColumnBuilder>(c)...);
         }
 
-        template <typename... QueryFieldsBuilder>
-        QueryBuilder& Order(QueryFieldsBuilder&&... q) {
-            sql_data_.sql_order =
-                    internal::SQLUtility::GenerateOrderSQLStatement(std::forward<QueryFieldsBuilder>(q)...);
+        template <typename... ColumnBuilder>
+        QueryBuilder& Order(ColumnBuilder&&... c) {
+            sql_data_.sql_order = internal::SQLUtility::GenerateOrderSQLStatement(std::forward<ColumnBuilder>(c)...);
 
             return *this;
         }
@@ -210,11 +214,6 @@ public:
     template <typename T>
     QueryBuilder<T> NewQueryBuilder() {
         return QueryBuilder<T>(*this);
-    }
-
-    template <typename T>
-    const auto& NewQueryFieldsBuilder() {
-        return internal::InjectEntrance::GetQueryFieldsBuilder<T>();
     }
 
 protected:

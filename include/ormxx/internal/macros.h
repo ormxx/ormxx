@@ -16,10 +16,10 @@
 #include "../types_check/has_ormxx_struct_schema_entrance.h"
 #include "../types_check/is_visit_field_func.h"
 #include "../types_check/is_visit_key_func.h"
+#include "./column_builder.h"
 #include "./create_entrance_field_options.h"
 #include "./inject_entrance.h"
 #include "./macros_utility.h"
-#include "./query_fields_builder.h"
 #include "./struct_schema_entrance_options.h"
 #include "./utils.h"
 
@@ -35,9 +35,9 @@ public:                                                                 \
         return this->Field;                                             \
     }
 
-#define __ORMXX_STRUCT_SCHEMA_DECLARE_QUERY_FIELDS_BUILDER(Field)                                            \
-    ::ormxx::internal::QueryFieldsBuilder<decltype(BaseStruct::Field)> Field{                                \
-            ::ormxx::internal::InjectUtility::GetQueryFieldBuilder<BaseStruct, decltype(BaseStruct::Field)>( \
+#define __ORMXX_STRUCT_SCHEMA_DECLARE_COLUMN_BUILDER(Field)                                                   \
+    ::ormxx::internal::ColumnBuilder<decltype(BaseStruct::Field)> Field{                                      \
+            ::ormxx::internal::InjectUtility::GenerateColumnBuilder<BaseStruct, decltype(BaseStruct::Field)>( \
                     __ORMXX_STR(Field))};
 
 #define ORMXX_STRUCT_SCHEMA_DECLARE_BEGIN(Struct, ...)                                          \
@@ -64,15 +64,15 @@ private:                                                                        
                                                                                                 \
     __ORMXX_EXPEND_FUNC_(__ORMXX_STRUCT_SCHEMA_DECLARE_SET_AND_GET_FUNCTION, __VA_ARGS__)       \
                                                                                                 \
-    class __ORMXX_QueryFieldsBuilder {                                                          \
+    class __ORMXX_ColumnBuilder {                                                               \
         using BaseStruct = Struct;                                                              \
                                                                                                 \
     public:                                                                                     \
-        __ORMXX_EXPEND_FUNC_(__ORMXX_STRUCT_SCHEMA_DECLARE_QUERY_FIELDS_BUILDER, __VA_ARGS__)   \
+        __ORMXX_EXPEND_FUNC_(__ORMXX_STRUCT_SCHEMA_DECLARE_COLUMN_BUILDER, __VA_ARGS__)         \
     };                                                                                          \
                                                                                                 \
-    static const __ORMXX_QueryFieldsBuilder& __ORMXX_NewQueryFieldsBuilder() {                  \
-        static auto q = __ORMXX_QueryFieldsBuilder{};                                           \
+    static const __ORMXX_ColumnBuilder& __ORMXX_NewColumnBuilder() {                            \
+        static auto q = __ORMXX_ColumnBuilder{};                                                \
         return q;                                                                               \
     }                                                                                           \
                                                                                                 \

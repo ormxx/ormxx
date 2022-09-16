@@ -3,8 +3,6 @@
 
 #include <type_traits>
 
-#include "../internal/query_fields_builder.h"
-
 namespace ormxx::internal {
 
 template <typename Test, template <typename...> class Ref>

@@ -10,9 +10,9 @@
 #include "../interface/result.h"
 #include "../options/key_options.h"
 #include "../types_check/has_ormxx_inject.h"
+#include "./column_builder.h"
 #include "./field_to_string.h"
 #include "./inject_entrance.h"
-#include "./query_fields_builder.h"
 #include "./struct_schema_entrance_options.h"
 
 namespace ormxx::internal {
@@ -85,25 +85,25 @@ public:
     }
 
     template <typename T, typename FieldType>
-    static auto GetQueryFieldBuilder(const std::string& origin_field_name) {
+    static auto GenerateColumnBuilder(const std::string& origin_field_name) {
         T t{};
 
-        QueryFieldsBuilder<FieldType> query_fields_builder{};
+        ColumnBuilder<FieldType> column_builder{};
 
         auto options = internal::StructSchemaEntranceOptionsBuilder()
                                .WithVisitField()
                                .WithVisitFieldByName(origin_field_name)
                                .Build();
         internal::InjectEntrance::StructSchemaEntrance(
-                &t, options, [&query_fields_builder]([[maybe_unused]] auto&& field, auto&& options) {
-                    query_fields_builder.origin_field_name = options.origin_field_name;
-                    query_fields_builder.field_name = options.field_name;
-                    query_fields_builder.field_type = options.field_type;
+                &t, options, [&column_builder]([[maybe_unused]] auto&& field, auto&& options) {
+                    column_builder.origin_field_name = options.origin_field_name;
+                    column_builder.field_name = options.field_name;
+                    column_builder.field_type = options.field_type;
                 });
 
-        query_fields_builder.init();
+        column_builder.init();
 
-        return query_fields_builder;
+        return column_builder;
     }
 
     template <typename T, std::enable_if_t<has_ormxx_inject_v<T> && !std::is_const_v<T>, bool> = true>
