@@ -27,7 +27,7 @@ public:
     QueryFieldsBuilder() = default;
 
 public:
-    Self Eq(T&& t) {
+    Self Eq(const T&& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -40,7 +40,7 @@ public:
         return s;
     }
 
-    Self Neq(T&& t) {
+    Self Neq(const T&& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -53,7 +53,7 @@ public:
         return s;
     }
 
-    Self Gt(T&& t) {
+    Self Gt(const T&& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -66,7 +66,7 @@ public:
         return s;
     }
 
-    Self Gte(T&& t) {
+    Self Gte(const T&& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -79,7 +79,7 @@ public:
         return s;
     }
 
-    Self Lt(T&& t) {
+    Self Lt(const T&& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -92,7 +92,7 @@ public:
         return s;
     }
 
-    Self Lte(T&& t) {
+    Self Lte(const T&& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -105,7 +105,7 @@ public:
         return s;
     }
 
-    Self Like(T&& t) {
+    Self Like(const T&& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -118,7 +118,7 @@ public:
         return s;
     }
 
-    Self Between(T&& l, T&& r) {
+    Self Between(const T&& l, const T&& r) {
         Self s = *this;
 
         auto l_field = SQLStatement::Field{};
@@ -136,7 +136,7 @@ public:
         return s;
     }
 
-    Self NotBetween(T&& l, T&& r) {
+    Self NotBetween(const T&& l, const T&& r) {
         Self s = *this;
 
         auto l_field = SQLStatement::Field{};
