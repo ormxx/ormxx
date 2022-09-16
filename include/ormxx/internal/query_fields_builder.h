@@ -27,7 +27,7 @@ public:
     QueryFieldsBuilder() = default;
 
 public:
-    Self Eq(const T&& t) {
+    Self Eq(const T& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -40,7 +40,12 @@ public:
         return s;
     }
 
-    Self Neq(const T&& t) {
+    Self Eq(T&& t) {
+        auto _t = std::move(t);
+        return Eq(_t);
+    }
+
+    Self Neq(const T& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -53,7 +58,12 @@ public:
         return s;
     }
 
-    Self Gt(const T&& t) {
+    Self Neq(T&& t) {
+        auto _t = std::move(t);
+        return New(_t);
+    }
+
+    Self Gt(const T& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -66,7 +76,12 @@ public:
         return s;
     }
 
-    Self Gte(const T&& t) {
+    Self Gt(T&& t) {
+        auto _t = std::move(t);
+        return Gt(_t);
+    }
+
+    Self Gte(const T& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -79,7 +94,12 @@ public:
         return s;
     }
 
-    Self Lt(const T&& t) {
+    Self Gte(T&& t) {
+        auto _t = std::move(t);
+        return Gte(_t);
+    }
+
+    Self Lt(const T& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -92,7 +112,12 @@ public:
         return s;
     }
 
-    Self Lte(const T&& t) {
+    Self Lt(T&& t) {
+        auto _t = std::move(t);
+        return Lt(_t);
+    }
+
+    Self Lte(const T& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -105,7 +130,12 @@ public:
         return s;
     }
 
-    Self Like(const T&& t) {
+    Self Lte(T&& t) {
+        auto _t = std::move(t);
+        return Lte(_t);
+    }
+
+    Self Like(const T& t) {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -118,7 +148,12 @@ public:
         return s;
     }
 
-    Self Between(const T&& l, const T&& r) {
+    Self Like(T&& t) {
+        auto _t = std::move(t);
+        return Like(_t);
+    }
+
+    Self Between(const T& l, const T& r) {
         Self s = *this;
 
         auto l_field = SQLStatement::Field{};
@@ -136,7 +171,13 @@ public:
         return s;
     }
 
-    Self NotBetween(const T&& l, const T&& r) {
+    Self Between(T&& l, T&& r) {
+        auto _l = std::move(l);
+        auto _r = std::move(r);
+        return Between(_l, _r);
+    }
+
+    Self NotBetween(const T& l, const T& r) {
         Self s = *this;
 
         auto l_field = SQLStatement::Field{};
@@ -152,6 +193,12 @@ public:
         s.sql_statement_.AppendField(r_field);
 
         return s;
+    }
+
+    Self NotBetween(T&& l, T&& r) {
+        auto _l = std::move(l);
+        auto _r = std::move(r);
+        return NotBetween(_l, _r);
     }
 
     Self Asc() {

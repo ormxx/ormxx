@@ -511,8 +511,10 @@ TEST_F(ORMXXTest, QueryFieldsBuilder1) {
         auto u = orm->NewQueryFieldsBuilder<model::User>();
         auto q = orm->NewQueryBuilder<model::User>();
 
+        const std::string name = "test";
+
         auto res =
-                q.Where(u.InsertTimestamp.Between("2022-8-30 10:00:00", "2022-9-5 12:00:00"), u.Name.Eq("test")).Find();
+                q.Where(u.InsertTimestamp.Between("2022-8-30 10:00:00", "2022-9-5 12:00:00"), u.Name.Eq(name)).Find();
         EXPECT_TRUE(res.IsOK());
 
         auto sql = orm->getLastSQLStatement().GetSQLString();
