@@ -228,7 +228,7 @@ public:
 
     ORMXX(Adaptor* adaptor, const Options& options) : adaptor_(adaptor), options_(options) {}
 
-    ~ORMXX() {
+    virtual ~ORMXX() {
         for (auto& [k, v] : connection_pool_node_map_) {
             while (!v.pool.empty()) {
                 auto& connection = v.pool.front();
@@ -244,6 +244,7 @@ public:
         }
     }
 
+public:
     ResultOr<std::unique_ptr<ExecuteResult>> Execute(const SQLStatement& sql_statement) {
 #if defined(ORMXX_BUILD_TESTS)
         addSQLStatementToHistory(sql_statement);
@@ -310,6 +311,7 @@ public:
         RESULT_DIRECT_RETURN(ExecuteUpdate(sql_statement));
     }
 
+public:
     template <typename T>
     Result CheckSchema() {
         RESULT_DIRECT_RETURN(GenerateCreateTableSQL<T>());
