@@ -216,7 +216,7 @@ public:
     // }
 
     template <typename T>
-    auto NewQueryFieldsBuilder() {
+    const auto& NewQueryFieldsBuilder() {
         return internal::InjectEntrance::GetQueryFieldsBuilder<T>();
     }
 

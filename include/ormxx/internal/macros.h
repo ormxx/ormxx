@@ -71,6 +71,11 @@ private:                                                                        
         __ORMXX_EXPEND_FUNC_(__ORMXX_STRUCT_SCHEMA_DECLARE_QUERY_FIELDS_BUILDER, __VA_ARGS__)   \
     };                                                                                          \
                                                                                                 \
+    static const __ORMXX_QueryFieldsBuilder& __ORMXX_NewQueryFieldsBuilder() {                  \
+        static auto q = __ORMXX_QueryFieldsBuilder{};                                           \
+        return q;                                                                               \
+    }                                                                                           \
+                                                                                                \
     template <typename T,                                                                       \
               std::enable_if_t<std::is_same_v<Struct, std::remove_const_t<T>>, bool> = true,    \
               typename Func>                                                                    \

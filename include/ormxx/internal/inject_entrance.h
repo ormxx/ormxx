@@ -41,8 +41,8 @@ public:
     }
 
     template <typename T>
-    static auto GetQueryFieldsBuilder() {
-        return typename T::__ORMXX_QueryFieldsBuilder();
+    static const auto& GetQueryFieldsBuilder() {
+        return T::__ORMXX_NewQueryFieldsBuilder();
     }
 
     template <typename T, std::enable_if_t<has_ormxx_inject_v<T>, bool> = true>
