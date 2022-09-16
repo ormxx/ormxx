@@ -31,9 +31,10 @@ ResultOr<std::string> GenerateUpdateSQL(T* t) {
         sql.pop_back();
         sql.pop_back();
     } else {
-        return Result::Builder(Result::ErrorCode::GenerateSQLError)
-                .WithErrorMessage(fmt::format("update field empty"))
-                .Build();
+        auto res = Result::Builder(Result::ErrorCode::GenerateSQLError)
+                           .WithErrorMessage(fmt::format("update field empty"))
+                           .Build();
+        RESULT_DIRECT_RETURN(res);
     }
 
     sql += " WHERE ";
