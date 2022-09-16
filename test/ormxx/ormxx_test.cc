@@ -484,3 +484,53 @@ TEST_F(ORMXXTest, QueryFieldsBuilder) {
         EXPECT_TRUE(res.IsOK());
     }
 }
+
+TEST_F(ORMXXTest, QueryFieldsBuilder1) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        for (int i = 1; i <= 20; i++) {
+            auto user = model::User().SetID(i).SetName("test").SetAge(i).SetInsertTimestamp(
+                    fmt::format("2022-09-{} 11:00:00", i));
+            auto insert_res = orm->Insert(&user);
+            EXPECT_TRUE(insert_res.IsOK());
+        }
+    }
+
+    {
+        auto u = orm->NewQueryFieldsBuilder<model::User>();
+        auto q = orm->NewQueryBuilder<model::User>();
+
+        auto res =
+                q.Where(u.InsertTimestamp.Between("2022-8-30 10:00:00", "2022-9-5 12:00:00"), u.Name.Eq("test")).Find();
+        EXPECT_TRUE(res.IsOK());
+
+        auto sql = orm->getLastSQLStatement().GetSQLString();
+        EXPECT_EQ(
+                sql,
+                std::string(
+                        R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE ((`insert_timestamp` BETWEEN ? AND ?) AND (`name` = ?));)"));
+
+        auto s_vec = std::move(res.Value());
+        EXPECT_EQ(s_vec.size(), 5);
+
+        for (int i = 1; i <= 5; i++) {
+            EXPECT_EQ(s_vec[i - 1].GetInsertTimestamp(), fmt::format("2022-09-0{} 11:00:00", i));
+        }
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+}
