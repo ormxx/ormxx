@@ -15,7 +15,6 @@
 #include "./sql/generate_create_table_sql.h"
 #include "./sql/generate_delete_sql.h"
 #include "./sql/generate_drop_table_sql.h"
-#include "./sql/generate_insert_sql.h"
 #include "./sql/generate_insert_sql_statement.h"
 #include "./sql/generate_select_sql_statement.h"
 #include "./sql/generate_update_sql.h"
