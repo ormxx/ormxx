@@ -478,4 +478,9 @@ TEST_F(ORMXXTest, QueryFieldsBuilder) {
         EXPECT_EQ(s_vec[0].GetAge(), 10);
         EXPECT_EQ(s_vec[1].GetAge(), 9);
     }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
 }
