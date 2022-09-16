@@ -322,6 +322,19 @@ TEST_F(ORMXXTest, first_test) {
     }
 
     {
+        auto res = orm->NewQueryBuilder<model::User>().Where(model::User().SetID(1).SetName("test")).First();
+        EXPECT_TRUE(res.IsOK());
+
+        auto sql = orm->getLastSQLStatement().GetSQLString();
+        EXPECT_EQ(sql, std::string(R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = ? AND `name` = ?) LIMIT 1;)"));
+
+        auto user = res.Value();
+        EXPECT_EQ(user.GetID(), 1);
+        EXPECT_EQ(user.GetName(), "test");
+        EXPECT_EQ(user.GetAge(), 1);
+    }
+
+    {
         auto res = orm->DropTable<model::User>();
         EXPECT_TRUE(res.IsOK());
     }
