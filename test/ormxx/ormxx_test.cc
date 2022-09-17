@@ -467,11 +467,16 @@ TEST_F(ORMXXTest, QueryFieldsBuilder) {
         auto res = q.Where(u.Age.Between(9, 10)).Order(u.Age.Desc()).Find();
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLStatement().GetSQLString();
+        const auto& last_sql = orm->getLastSQLStatement();
+
+        const auto& sql = last_sql.GetSQLString();
         EXPECT_EQ(
                 sql,
                 std::string(
                         R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE ((`age` BETWEEN ? AND ?)) ORDER BY `age` DESC;)"));
+
+        const auto fields = last_sql.FieldsToString();
+        EXPECT_EQ(fields, std::string("[9, 10]"));
 
         auto s_vec = std::move(res.Value());
         EXPECT_EQ(s_vec.size(), 2);
@@ -517,11 +522,16 @@ TEST_F(ORMXXTest, QueryFieldsBuilder1) {
                 q.Where(u.InsertTimestamp.Between("2022-8-30 10:00:00", "2022-9-5 12:00:00"), u.Name.Eq(name)).Find();
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLStatement().GetSQLString();
+        const auto& last_sql = orm->getLastSQLStatement();
+
+        const auto& sql = last_sql.GetSQLString();
         EXPECT_EQ(
                 sql,
                 std::string(
                         R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE ((`insert_timestamp` BETWEEN ? AND ?) AND (`name` = ?));)"));
+
+        const auto fields = last_sql.FieldsToString();
+        EXPECT_EQ(fields, std::string("[2022-8-30 10:00:00, 2022-9-5 12:00:00, test]"));
 
         auto s_vec = std::move(res.Value());
         EXPECT_EQ(s_vec.size(), 5);
