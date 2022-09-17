@@ -6,7 +6,7 @@
 #include "fmt/core.h"
 
 #include "../interface/sql_statement.h"
-#include "../internal/column_builder.h"
+#include "../internal/field_builder.h"
 #include "../internal/field_to_sql_statement_field_value.h"
 #include "../internal/field_to_string.h"
 #include "../internal/inject_entrance.h"
@@ -94,7 +94,7 @@ public:
 
 private:
     template <typename T>
-    static const SQLStatement& getSQLStatementFromQueryFieldsBuilder(const ColumnBuilder<T>& c) {
+    static const SQLStatement& getSQLStatementFromQueryFieldsBuilder(const FieldBuilder<T>& c) {
         return c.getSQLStatement();
     }
 };

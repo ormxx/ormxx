@@ -41,8 +41,8 @@ public:
     }
 
     template <typename T>
-    static const auto& GetColumnBuilder() {
-        return T::__ORMXX_NewColumnBuilder();
+    static const auto& GetFieldBuilder() {
+        return T::__ORMXX_NewFieldBuilder();
     }
 
     template <typename T, std::enable_if_t<has_ormxx_inject_v<T>, bool> = true>

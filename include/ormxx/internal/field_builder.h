@@ -1,5 +1,5 @@
-#ifndef ORMXX_INTERNAL_COLUMN_BUILDER_H
-#define ORMXX_INTERNAL_COLUMN_BUILDER_H
+#ifndef ORMXX_INTERNAL_FIELD_BUILDER_H
+#define ORMXX_INTERNAL_FIELD_BUILDER_H
 
 #include <string>
 
@@ -17,15 +17,15 @@ class InjectUtility;
 class SQLUtility;
 
 template <typename T>
-class ColumnBuilder {
-    using Self = ColumnBuilder<T>;
+class FieldBuilder {
+    using Self = FieldBuilder<T>;
 
     friend class ::ormxx::internal::InjectUtility;
     friend class ::ormxx::internal::SQLUtility;
 
 public:
-    ColumnBuilder() = default;
-    virtual ~ColumnBuilder() = default;
+    FieldBuilder() = default;
+    virtual ~FieldBuilder() = default;
 
 public:
     Self Eq(const T& t) {
@@ -242,4 +242,4 @@ private:
 }  // namespace internal
 }  // namespace ormxx
 
-#endif  // ORMXX_INTERNAL_COLUMN_BUILDER_H
+#endif  // ORMXX_INTERNAL_FIELD_BUILDER_H
