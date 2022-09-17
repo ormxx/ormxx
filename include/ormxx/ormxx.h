@@ -215,6 +215,11 @@ public:
         return QueryBuilder<T>(*this);
     }
 
+    template <typename T>
+    const auto& NewFields() {
+        return internal::InjectEntrance::GetFieldBuilder<T>();
+    }
+
 protected:
     struct connectionPoolNode {
         std::mutex mutex_;
