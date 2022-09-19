@@ -158,7 +158,6 @@ public:
         template <typename... FieldBuilder>
         QueryBuilder& Order(FieldBuilder&&... c) {
             sql_expr_.sql_order = internal::SQLUtility::GenerateOrderSQLStatement(std::forward<FieldBuilder>(c)...);
-
             return *this;
         }
 
