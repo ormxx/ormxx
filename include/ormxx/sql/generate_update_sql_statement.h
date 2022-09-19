@@ -65,6 +65,16 @@ ResultOr<SQLStatement> GenerateUpdateSQLStatement(const internal::SQLExpr& sql_e
         s.AppendFields(sql_expr.sql_where.GetFields());
     }
 
+    if (!sql_expr.sql_order.Empty()) {
+        s.AppendSQLString(fmt::format(" ORDER BY {}", sql_expr.sql_order.GetSQLString()));
+        s.AppendFields(sql_expr.sql_order.GetFields());
+    }
+
+    if (!sql_expr.sql_limit.Empty()) {
+        s.AppendSQLString(fmt::format(" LIMIT {}", sql_expr.sql_limit.GetSQLString()));
+        s.AppendFields(sql_expr.sql_limit.GetFields());
+    }
+
     s.AppendSQLString(";");
 
     return s;
@@ -90,6 +100,16 @@ ResultOr<SQLStatement> GenerateUpdateSQLStatement(const internal::SQLExpr& sql_e
     if (!sql_expr.sql_where.Empty()) {
         s.AppendSQLString(fmt::format(" WHERE {}", sql_expr.sql_where.GetSQLString()));
         s.AppendFields(sql_expr.sql_where.GetFields());
+    }
+
+    if (!sql_expr.sql_order.Empty()) {
+        s.AppendSQLString(fmt::format(" ORDER BY {}", sql_expr.sql_order.GetSQLString()));
+        s.AppendFields(sql_expr.sql_order.GetFields());
+    }
+
+    if (!sql_expr.sql_limit.Empty()) {
+        s.AppendSQLString(fmt::format(" LIMIT {}", sql_expr.sql_limit.GetSQLString()));
+        s.AppendFields(sql_expr.sql_limit.GetFields());
     }
 
     s.AppendSQLString(";");
