@@ -686,6 +686,59 @@ TEST_F(ORMXXTest, QueryFieldsBuilder_Update) {
     }
 }
 
+TEST_F(ORMXXTest, QueryFieldsBuilder_Update_1) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        for (int i = 1; i <= 20; i++) {
+            auto user = model::User().SetID(i).SetName("test").SetAge(i).SetInsertTimestamp(
+                    fmt::format("2022-09-{} 11:00:00", i));
+            auto insert_res = orm->Insert(&user);
+            EXPECT_TRUE(insert_res.IsOK());
+        }
+    }
+
+    {
+        auto q = orm->NewQueryBuilder<model::User>();
+        auto u = q.NewFields();
+
+        auto res = q.Where(u.Age.Gte(20)).Update(u.Age.Add(5), u.Name.Value("test2"));
+        EXPECT_TRUE(res.IsOK());
+
+        const auto& last_sql = orm->getLastSQLStatement();
+
+        const auto& sql = last_sql.GetSQLString();
+        const auto expected_sql =
+                std::string(R"(UPDATE `user` SET `age` = `age` + ?, `name` = ? WHERE ((`age` >= ?));)");
+        EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[5, test2, 20]");
+        EXPECT_EQ(fields, expected_fields);
+
+        {
+            auto res = q.Where(u.Age.Eq(25)).Find();
+            auto s_vec = std::move(res.Value());
+            EXPECT_EQ(s_vec.size(), 1);
+        }
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+}
+
 TEST_F(ORMXXTest, QueryFieldsBuilder_Delete) {
     auto* orm = GetORMXX();
 

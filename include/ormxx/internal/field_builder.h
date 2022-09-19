@@ -216,6 +216,50 @@ public:
         return s;
     }
 
+    Self Add(const T& t) const {
+        Self s = *this;
+
+        auto field = SQLStatement::Field{};
+        field.field_type = field_type;
+        field.value = internal::FieldToSQLStatementFieldValue(&t);
+
+        s.sql_statement_.AppendSQLString(fmt::format("`{}` = `{}` + ?", field_name, field_name));
+        s.sql_statement_.AppendField(field);
+
+        return s;
+    }
+
+    Self Add(T&& t) const {
+        const auto _t = std::move(t);
+        return Add(_t);
+    }
+
+    Self Null() const {
+        Self s = *this;
+
+        s.sql_statement_.AppendSQLString(fmt::format("`{}` = NULL", field_name));
+
+        return s;
+    }
+
+    Self Value(const T& t) const {
+        Self s = *this;
+
+        auto field = SQLStatement::Field{};
+        field.field_type = field_type;
+        field.value = internal::FieldToSQLStatementFieldValue(&t);
+
+        s.sql_statement_.AppendSQLString(fmt::format("`{}` = ?", field_name));
+        s.sql_statement_.AppendField(field);
+
+        return s;
+    }
+
+    Self Value(T&& t) const {
+        const auto _t = std::move(t);
+        return Value(_t);
+    }
+
 private:
     void init() {
         default_sql_statement_.SetSQLString(fmt::format("`{}`", field_name));

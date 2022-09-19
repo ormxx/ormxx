@@ -13,6 +13,7 @@
 #include "../internal/inject_utility.h"
 #include "../internal/result_to_field.h"
 #include "../types_check/has_ormxx_inject.h"
+#include "../types_check/is_field_builder.h"
 
 namespace ormxx::internal {
 
@@ -92,7 +93,7 @@ public:
         return s;
     }
 
-    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
     static ResultOr<SQLStatement> GenerateUpdateSetSQLStatement(const T& t) {
         SQLStatement s{};
         auto& sql_string = s.SQLString();
@@ -124,10 +125,29 @@ public:
         return s;
     }
 
+    template <typename... FieldBuilder, std::enable_if_t<internal::is_field_builder_v<FieldBuilder...>, bool> = true>
+    static ResultOr<SQLStatement> GenerateUpdateSetSQLStatement(FieldBuilder&&... field_builder) {
+        SQLStatement s{};
+
+        const auto f = [&s](auto&& field_builder) -> bool {
+            std::string prefix = s.Empty() ? "" : ", ";
+
+            const auto& ss = getSQLStatementFromQueryFieldsBuilder(field_builder);
+            s.AppendSQLString(fmt::format("{}{}", prefix, ss.GetSQLString()));
+            s.AppendFields(ss.GetFields());
+
+            return true;
+        };
+
+        (f(std::forward<FieldBuilder>(field_builder)) && ...);
+
+        return s;
+    }
+
 private:
     template <typename T>
-    static const SQLStatement& getSQLStatementFromQueryFieldsBuilder(const FieldBuilder<T>& c) {
-        return c.getSQLStatement();
+    static const SQLStatement& getSQLStatementFromQueryFieldsBuilder(const FieldBuilder<T>& field_builder) {
+        return field_builder.getSQLStatement();
     }
 };
 

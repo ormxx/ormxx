@@ -19,7 +19,7 @@
 #include "./sql/generate_update_sql_statement.h"
 #include "./sql/sql_expr.h"
 #include "./sql/sql_utility.h"
-#include "./types_check/is_specialization.h"
+#include "./types_check/is_field_builder.h"
 
 #include "./interface/index.h"            // IWYU pragma: export
 #include "./internal/inject_utility.h"    // IWYU pragma: export
@@ -80,8 +80,7 @@ public:
         }
 
     public:
-        template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::FieldBuilder>::value, bool> = true>
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
         QueryBuilder& And(T* t) {
             std::string prefix = sql_expr_.sql_where.Empty() ? "" : " AND ";
 
@@ -92,25 +91,24 @@ public:
             return *this;
         }
 
-        template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::FieldBuilder>::value, bool> = true>
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
         QueryBuilder& And(T&& t) {
             return And(&t);
         }
 
-        template <typename... QueryFieldsBuilder>
-        QueryBuilder& And(QueryFieldsBuilder&&... q) {
+        template <typename... FieldBuilder,
+                  std::enable_if_t<internal::is_field_builder_v<FieldBuilder...>, bool> = true>
+        QueryBuilder& And(FieldBuilder&&... fb) {
             std::string prefix = sql_expr_.sql_where.Empty() ? "" : " AND ";
 
-            auto w = internal::SQLUtility::GenerateWhereSQLStatement(std::forward<QueryFieldsBuilder>(q)...);
+            auto w = internal::SQLUtility::GenerateWhereSQLStatement(std::forward<FieldBuilder>(fb)...);
             sql_expr_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
             sql_expr_.sql_where.AppendFields(w.GetFields());
 
             return *this;
         }
 
-        template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::FieldBuilder>::value, bool> = true>
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
         QueryBuilder& Or(T* t) {
             std::string prefix = sql_expr_.sql_where.Empty() ? "" : " OR ";
 
@@ -121,13 +119,13 @@ public:
             return *this;
         }
 
-        template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::FieldBuilder>::value, bool> = true>
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
         QueryBuilder& Or(T&& t) {
             return Or(&t);
         }
 
-        template <typename... FieldBuilder>
+        template <typename... FieldBuilder,
+                  std::enable_if_t<internal::is_field_builder_v<FieldBuilder...>, bool> = true>
         QueryBuilder& Or(FieldBuilder&&... c) {
             std::string prefix = sql_expr_.sql_where.Empty() ? "" : " OR ";
 
@@ -138,24 +136,24 @@ public:
             return *this;
         }
 
-        template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::FieldBuilder>::value, bool> = true>
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
         QueryBuilder& Where(T* t) {
             return And(t);
         }
 
-        template <typename T,
-                  std::enable_if_t<!internal::is_specialization<T, internal::FieldBuilder>::value, bool> = true>
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
         QueryBuilder& Where(T&& t) {
             return Where(&t);
         }
 
-        template <typename... FieldBuilder>
+        template <typename... FieldBuilder,
+                  std::enable_if_t<internal::is_field_builder_v<FieldBuilder...>, bool> = true>
         QueryBuilder& Where(FieldBuilder&&... c) {
             return And(std::forward<FieldBuilder>(c)...);
         }
 
-        template <typename... FieldBuilder>
+        template <typename... FieldBuilder,
+                  std::enable_if_t<internal::is_field_builder_v<FieldBuilder...>, bool> = true>
         QueryBuilder& Order(FieldBuilder&&... c) {
             sql_expr_.sql_order = internal::SQLUtility::GenerateOrderSQLStatement(std::forward<FieldBuilder>(c)...);
             return *this;
@@ -171,7 +169,7 @@ public:
             return *this;
         }
 
-        template <std::enable_if_t<!std::is_void_v<Struct>, bool> = true>
+        template <std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<Struct>>, bool> = true>
         ResultOr<Struct> First() {
             Struct s{};
 
@@ -187,7 +185,7 @@ public:
             return s;
         }
 
-        template <std::enable_if_t<!std::is_void_v<Struct>, bool> = true>
+        template <std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<Struct>>, bool> = true>
         ResultOr<std::vector<Struct>> Find() {
             Struct s{};
 
@@ -203,15 +201,24 @@ public:
             return s_vec;
         }
 
-        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
         ResultOr<std::unique_ptr<ExecuteResult>> Update(T* t) {
             RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateUpdateSQLStatement(sql_expr_, *t));
             RESULT_DIRECT_RETURN(ormxx_.ExecuteUpdate(sql_statement));
         }
 
-        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<std::decay_t<T>>, bool> = true>
         ResultOr<std::unique_ptr<ExecuteResult>> Update(T t) {
             return Update(&t);
+        }
+
+        template <typename... FieldBuilder,
+                  std::enable_if_t<internal::is_field_builder_v<FieldBuilder...>, bool> = true>
+        ResultOr<std::unique_ptr<ExecuteResult>> Update(FieldBuilder&&... field_builder) {
+            RESULT_VALUE_OR_RETURN(
+                    const auto sql_statement,
+                    GenerateUpdateSQLStatement<Struct>(sql_expr_, std::forward<FieldBuilder>(field_builder)...));
+            RESULT_DIRECT_RETURN(ormxx_.ExecuteUpdate(sql_statement));
         }
 
         ResultOr<std::unique_ptr<ExecuteResult>> Delete() {

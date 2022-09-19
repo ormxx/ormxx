@@ -21,6 +21,15 @@ TEST_F(TypeTraitsTest, class_member_pointer_test) {
         int var;
     };
 
-    EXPECT_TRUE(std::is_same_v<Bar, class_member_pointer_class_t<&Bar::var>>);
-    EXPECT_TRUE(std::is_same_v<int, class_member_pointer_value_t<&Bar::var>>);
+    using T = decltype(&Bar::var);
+
+    {
+        bool res = std::is_same_v<Bar, class_member_pointer_class_t<T>>;
+        EXPECT_TRUE(res);
+    }
+
+    {
+        bool res = std::is_same_v<int, class_member_pointer_value_t<T>>;
+        EXPECT_TRUE(res);
+    }
 }

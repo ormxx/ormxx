@@ -40,6 +40,8 @@ file(GLOB UNITTEST_FILE
     "ormxx/adaptor/mysql/*_test.cc"
     "ormxx/internal/*_test.cc"
     "ormxx/interface/*_test.cc"
+    "ormxx/type_traits/*_test.cc"
+    "ormxx/types_check/*_test.cc"
 )
 add_executable(
     unit_test
