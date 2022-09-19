@@ -49,12 +49,6 @@ ResultOr<SQLStatement> GenerateUpdateSQLStatement(T* t) {
 
 template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
 ResultOr<SQLStatement> GenerateUpdateSQLStatement(const internal::SQLExpr& sql_expr, const T& t) {
-    if (sql_expr.sql_where.Empty()) {
-        auto res =
-                Result::Builder(Result::ErrorCode::GenerateSQLError).WithErrorMessage("where clause is empty").Build();
-        RESULT_DIRECT_RETURN(res);
-    }
-
     SQLStatement s{};
 
     const auto table_options = internal::InjectEntrance::GetTableOptions(&t);
@@ -64,8 +58,10 @@ ResultOr<SQLStatement> GenerateUpdateSQLStatement(const internal::SQLExpr& sql_e
     RESULT_VALUE_OR_RETURN(const auto update_sql_statement, internal::SQLUtility::GenerateUpdateSetSQLStatement(t));
     s.Append(update_sql_statement);
 
-    s.AppendSQLString(fmt::format(" WHERE {}", sql_expr.sql_where.GetSQLString()));
-    s.AppendFields(sql_expr.sql_where.GetFields());
+    if (!sql_expr.sql_where.Empty()) {
+        s.AppendSQLString(fmt::format(" WHERE {}", sql_expr.sql_where.GetSQLString()));
+        s.AppendFields(sql_expr.sql_where.GetFields());
+    }
 
     s.AppendSQLString(";");
 
