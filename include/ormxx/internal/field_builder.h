@@ -28,7 +28,7 @@ public:
     virtual ~FieldBuilder() = default;
 
 public:
-    Self Eq(const T& t) {
+    Self Eq(const T& t) const {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -41,12 +41,12 @@ public:
         return s;
     }
 
-    Self Eq(T&& t) {
+    Self Eq(T&& t) const {
         auto _t = std::move(t);
         return Eq(_t);
     }
 
-    Self Neq(const T& t) {
+    Self Neq(const T& t) const {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -59,12 +59,12 @@ public:
         return s;
     }
 
-    Self Neq(T&& t) {
+    Self Neq(T&& t) const {
         auto _t = std::move(t);
         return New(_t);
     }
 
-    Self Gt(const T& t) {
+    Self Gt(const T& t) const {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -77,12 +77,12 @@ public:
         return s;
     }
 
-    Self Gt(T&& t) {
+    Self Gt(T&& t) const {
         auto _t = std::move(t);
         return Gt(_t);
     }
 
-    Self Gte(const T& t) {
+    Self Gte(const T& t) const {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -95,12 +95,12 @@ public:
         return s;
     }
 
-    Self Gte(T&& t) {
+    Self Gte(T&& t) const {
         auto _t = std::move(t);
         return Gte(_t);
     }
 
-    Self Lt(const T& t) {
+    Self Lt(const T& t) const {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -113,12 +113,12 @@ public:
         return s;
     }
 
-    Self Lt(T&& t) {
+    Self Lt(T&& t) const {
         auto _t = std::move(t);
         return Lt(_t);
     }
 
-    Self Lte(const T& t) {
+    Self Lte(const T& t) const {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -131,12 +131,12 @@ public:
         return s;
     }
 
-    Self Lte(T&& t) {
+    Self Lte(T&& t) const {
         auto _t = std::move(t);
         return Lte(_t);
     }
 
-    Self Like(const T& t) {
+    Self Like(const T& t) const {
         Self s = *this;
 
         auto f = SQLStatement::Field{};
@@ -149,12 +149,12 @@ public:
         return s;
     }
 
-    Self Like(T&& t) {
+    Self Like(T&& t) const {
         auto _t = std::move(t);
         return Like(_t);
     }
 
-    Self Between(const T& l, const T& r) {
+    Self Between(const T& l, const T& r) const {
         Self s = *this;
 
         auto l_field = SQLStatement::Field{};
@@ -172,13 +172,13 @@ public:
         return s;
     }
 
-    Self Between(T&& l, T&& r) {
+    Self Between(T&& l, T&& r) const {
         auto _l = std::move(l);
         auto _r = std::move(r);
         return Between(_l, _r);
     }
 
-    Self NotBetween(const T& l, const T& r) {
+    Self NotBetween(const T& l, const T& r) const {
         Self s = *this;
 
         auto l_field = SQLStatement::Field{};
@@ -196,20 +196,20 @@ public:
         return s;
     }
 
-    Self NotBetween(T&& l, T&& r) {
+    Self NotBetween(T&& l, T&& r) const {
         auto _l = std::move(l);
         auto _r = std::move(r);
         return NotBetween(_l, _r);
     }
 
-    Self Asc() {
+    Self Asc() const {
         Self s = *this;
         s.sql_statement_.AppendSQLString(fmt::format("`{}` ASC", field_name));
 
         return s;
     }
 
-    Self Desc() {
+    Self Desc() const {
         Self s = *this;
         s.sql_statement_.AppendSQLString(fmt::format("`{}` DESC", field_name));
 

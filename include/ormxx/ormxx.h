@@ -204,6 +204,17 @@ public:
             return s_vec;
         }
 
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+        ResultOr<std::unique_ptr<ExecuteResult>> Update(T* t) {
+            RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateUpdateSQLStatement(sql_expr_, *t));
+            RESULT_DIRECT_RETURN(ormxx_.ExecuteUpdate(sql_statement));
+        }
+
+        template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+        Result Update(T t) {
+            return Update(&t);
+        }
+
     private:
         internal::SQLExpr sql_expr_{};
         ORMXX& ormxx_;

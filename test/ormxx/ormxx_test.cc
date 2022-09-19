@@ -498,7 +498,7 @@ TEST_F(ORMXXTest, transaction_test) {
     }
 }
 
-TEST_F(ORMXXTest, QueryFieldsBuilder) {
+TEST_F(ORMXXTest, QueryBuilder_Select) {
     auto* orm = GetORMXX();
 
     {
@@ -573,7 +573,7 @@ TEST_F(ORMXXTest, QueryFieldsBuilder) {
     }
 }
 
-TEST_F(ORMXXTest, QueryFieldsBuilder1) {
+TEST_F(ORMXXTest, QueryFieldsBuilder_Select_1) {
     auto* orm = GetORMXX();
 
     {
@@ -621,6 +621,62 @@ TEST_F(ORMXXTest, QueryFieldsBuilder1) {
 
         for (int i = 1; i <= 5; i++) {
             EXPECT_EQ(s_vec[i - 1].GetInsertTimestamp(), fmt::format("2022-09-0{} 11:00:00", i));
+        }
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+}
+
+TEST_F(ORMXXTest, QueryFieldsBuilder_Update_1) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        for (int i = 1; i <= 20; i++) {
+            auto user = model::User().SetID(i).SetName("test").SetAge(i).SetInsertTimestamp(
+                    fmt::format("2022-09-{} 11:00:00", i));
+            auto insert_res = orm->Insert(&user);
+            EXPECT_TRUE(insert_res.IsOK());
+        }
+    }
+
+    {
+        auto q = orm->NewQueryBuilder<model::User>();
+        auto u = q.NewFields();
+
+        const std::string name = "test";
+
+        auto res = q.Where(u.InsertTimestamp.Between("2022-8-30 10:00:00", "2022-9-5 12:00:00"), u.Name.Eq(name))
+                           .Update(model::User{}.SetAge(999));
+        EXPECT_TRUE(res.IsOK());
+
+        const auto& last_sql = orm->getLastSQLStatement();
+
+        const auto& sql = last_sql.GetSQLString();
+        const auto expected_sql = std::string(
+                R"(UPDATE `user` SET `age` = ? WHERE ((`insert_timestamp` BETWEEN ? AND ?) AND (`name` = ?));)");
+        EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[999, 2022-8-30 10:00:00, 2022-9-5 12:00:00, test]");
+        EXPECT_EQ(fields, expected_fields);
+
+        {
+            auto res = q.Where(u.Age.Eq(999)).Find();
+            auto s_vec = std::move(res.Value());
+            EXPECT_EQ(s_vec.size(), 5);
         }
     }
 
