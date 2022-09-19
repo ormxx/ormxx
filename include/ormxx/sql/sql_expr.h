@@ -1,5 +1,5 @@
-#ifndef ORMXX_INTERNAL_QUERY_BUILDER_SQL_DATA_H
-#define ORMXX_INTERNAL_QUERY_BUILDER_SQL_DATA_H
+#ifndef ORMXX_SQL_SQL_EXPR_H
+#define ORMXX_SQL_SQL_EXPR_H
 
 #include <string>
 
@@ -7,7 +7,7 @@
 
 namespace ormxx::internal {
 
-struct QueryBuilderSQLData {
+struct SQLExpr {
     SQLStatement sql_from{""};
     SQLStatement sql_select{""};
     SQLStatement sql_where{""};
@@ -19,4 +19,4 @@ struct QueryBuilderSQLData {
 
 }  // namespace ormxx::internal
 
-#endif  // ORMXX_INTERNAL_QUERY_BUILDER_SQL_DATA_H
+#endif  // ORMXX_SQL_SQL_EXPR_H

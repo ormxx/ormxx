@@ -11,13 +11,13 @@
 
 #include "./internal/defer.h"
 #include "./internal/field_builder.h"
-#include "./internal/query_builder_sql_data.h"
 #include "./sql/generate_create_table_sql.h"
 #include "./sql/generate_delete_sql.h"
 #include "./sql/generate_drop_table_sql.h"
 #include "./sql/generate_insert_sql_statement.h"
 #include "./sql/generate_select_sql_statement.h"
 #include "./sql/generate_update_sql.h"
+#include "./sql/sql_expr.h"
 #include "./sql/sql_utility.h"
 #include "./types_check/is_specialization.h"
 
@@ -68,7 +68,7 @@ public:
         QueryBuilder(ORMXX& ormxx) : ormxx_(ormxx) {
             if constexpr (!std::is_void_v<Struct>) {
                 const auto table_options_ = internal::InjectEntrance::GetTableOptions<Struct>();
-                sql_data_.sql_from.SetSQLString(fmt::format("`{}`", table_options_.table_name));
+                sql_expr_.sql_from.SetSQLString(fmt::format("`{}`", table_options_.table_name));
             }
         }
 
@@ -83,11 +83,11 @@ public:
         template <typename T,
                   std::enable_if_t<!internal::is_specialization<T, internal::FieldBuilder>::value, bool> = true>
         QueryBuilder& And(T* t) {
-            std::string prefix = sql_data_.sql_where.Empty() ? "" : " AND ";
+            std::string prefix = sql_expr_.sql_where.Empty() ? "" : " AND ";
 
             auto w = internal::SQLUtility::GenerateWhereSQLStatement(t);
-            sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
-            sql_data_.sql_where.AppendFields(w.GetFields());
+            sql_expr_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
+            sql_expr_.sql_where.AppendFields(w.GetFields());
 
             return *this;
         }
@@ -100,11 +100,11 @@ public:
 
         template <typename... QueryFieldsBuilder>
         QueryBuilder& And(QueryFieldsBuilder&&... q) {
-            std::string prefix = sql_data_.sql_where.Empty() ? "" : " AND ";
+            std::string prefix = sql_expr_.sql_where.Empty() ? "" : " AND ";
 
             auto w = internal::SQLUtility::GenerateWhereSQLStatement(std::forward<QueryFieldsBuilder>(q)...);
-            sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
-            sql_data_.sql_where.AppendFields(w.GetFields());
+            sql_expr_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
+            sql_expr_.sql_where.AppendFields(w.GetFields());
 
             return *this;
         }
@@ -112,11 +112,11 @@ public:
         template <typename T,
                   std::enable_if_t<!internal::is_specialization<T, internal::FieldBuilder>::value, bool> = true>
         QueryBuilder& Or(T* t) {
-            std::string prefix = sql_data_.sql_where.Empty() ? "" : " OR ";
+            std::string prefix = sql_expr_.sql_where.Empty() ? "" : " OR ";
 
             auto w = internal::SQLUtility::GenerateWhereSQLStatement(t);
-            sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
-            sql_data_.sql_where.AppendFields(w.GetFields());
+            sql_expr_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
+            sql_expr_.sql_where.AppendFields(w.GetFields());
 
             return *this;
         }
@@ -129,11 +129,11 @@ public:
 
         template <typename... FieldBuilder>
         QueryBuilder& Or(FieldBuilder&&... c) {
-            std::string prefix = sql_data_.sql_where.Empty() ? "" : " OR ";
+            std::string prefix = sql_expr_.sql_where.Empty() ? "" : " OR ";
 
             auto w = internal::SQLUtility::GenerateWhereSQLStatement(std::forward<FieldBuilder>(c)...);
-            sql_data_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
-            sql_data_.sql_where.AppendFields(w.GetFields());
+            sql_expr_.sql_where.AppendSQLString(fmt::format("{}({})", prefix, w.GetSQLString()));
+            sql_expr_.sql_where.AppendFields(w.GetFields());
 
             return *this;
         }
@@ -157,18 +157,18 @@ public:
 
         template <typename... FieldBuilder>
         QueryBuilder& Order(FieldBuilder&&... c) {
-            sql_data_.sql_order = internal::SQLUtility::GenerateOrderSQLStatement(std::forward<FieldBuilder>(c)...);
+            sql_expr_.sql_order = internal::SQLUtility::GenerateOrderSQLStatement(std::forward<FieldBuilder>(c)...);
 
             return *this;
         }
 
         QueryBuilder& Limit(uint64_t limit = 1) {
-            sql_data_.sql_limit = fmt::format("{}", limit);
+            sql_expr_.sql_limit = fmt::format("{}", limit);
             return *this;
         }
 
         QueryBuilder& Offset(uint64_t offset = 1) {
-            sql_data_.sql_offset = fmt::format("{}", offset);
+            sql_expr_.sql_offset = fmt::format("{}", offset);
             return *this;
         }
 
@@ -176,7 +176,7 @@ public:
         ResultOr<Struct> First() {
             Struct s;
 
-            auto _sql_data = sql_data_;
+            auto _sql_data = sql_expr_;
             _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
             _sql_data.sql_limit.SetSQLString("1");
 
@@ -192,7 +192,7 @@ public:
         ResultOr<std::vector<Struct>> Find() {
             Struct s;
 
-            auto _sql_data = sql_data_;
+            auto _sql_data = sql_expr_;
             _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
 
             RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateSelectSQLStatement(_sql_data));
@@ -205,7 +205,7 @@ public:
         }
 
     private:
-        internal::QueryBuilderSQLData sql_data_{};
+        internal::SQLExpr sql_expr_{};
         ORMXX& ormxx_;
     };
 
