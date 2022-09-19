@@ -12,12 +12,8 @@ namespace ormxx {
 
 template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
 ResultOr<SQLStatement> GenerateUpdateSQLStatement(T* t) {
-    auto primary_key_filed_name_res = internal::InjectUtility::GetPrimaryKeyFieldName<T>();
-    if (!primary_key_filed_name_res.IsOK()) {
-        return primary_key_filed_name_res;
-    }
+    RESULT_VALUE_OR_RETURN(const auto primary_key_field_name, internal::InjectUtility::GetPrimaryKeyFieldName<T>());
 
-    const auto primary_key_field_name = std::move(primary_key_filed_name_res.Value());
     const auto table_options = internal::InjectEntrance::GetTableOptions(t);
 
     SQLStatement sql_statement{};
