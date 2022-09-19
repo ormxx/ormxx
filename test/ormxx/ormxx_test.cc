@@ -204,8 +204,15 @@ TEST_F(ORMXXTest, delete_test) {
         auto res = orm->Delete<model::User>(&user);
         EXPECT_TRUE(res.IsOK());
 
-        auto sql = orm->getLastSQLStatement().GetSQLString();
-        EXPECT_EQ(sql, std::string("DELETE FROM `user` WHERE `id` = 1;"));
+        const auto& last_sql = orm->getLastSQLStatement();
+
+        const auto& sql = last_sql.GetSQLString();
+        const auto expected_sql = std::string(R"(DELETE FROM `user` WHERE `id` = ?;)");
+        EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[1]");
+        EXPECT_EQ(fields, expected_fields);
     }
 
     {

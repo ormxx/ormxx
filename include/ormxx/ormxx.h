@@ -12,7 +12,7 @@
 #include "./internal/defer.h"
 #include "./internal/field_builder.h"
 #include "./sql/generate_create_table_sql.h"
-#include "./sql/generate_delete_sql.h"
+#include "./sql/generate_delete_sql_statement.h"
 #include "./sql/generate_drop_table_sql.h"
 #include "./sql/generate_insert_sql_statement.h"
 #include "./sql/generate_select_sql_statement.h"
@@ -369,8 +369,8 @@ public:
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Delete(T* t) {
-        RESULT_VALUE_OR_RETURN(const auto sql, GenerateDeleteSQL<T>(t));
-        RESULT_DIRECT_RETURN(ExecuteUpdate(sql));
+        RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateDeleteSQLStatement<T>(t));
+        RESULT_DIRECT_RETURN(ExecuteUpdate(sql_statement));
     }
 
     template <typename T>
