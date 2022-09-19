@@ -16,7 +16,7 @@
 #include "./sql/generate_drop_table_sql.h"
 #include "./sql/generate_insert_sql_statement.h"
 #include "./sql/generate_select_sql_statement.h"
-#include "./sql/generate_update_sql.h"
+#include "./sql/generate_update_sql_statement.h"
 #include "./sql/sql_expr.h"
 #include "./sql/sql_utility.h"
 #include "./types_check/is_specialization.h"
@@ -380,8 +380,8 @@ public:
 
     template <typename T>
     ResultOr<std::unique_ptr<ExecuteResult>> Update(T* t) {
-        RESULT_VALUE_OR_RETURN(const auto sql, GenerateUpdateSQL<T>(t));
-        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql));
+        RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateUpdateSQLStatement<T>(t));
+        RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql_statement));
 
         if constexpr (!std::is_const_v<T>) {
             internal::InjectUtility::ClearIsSetMap(t);

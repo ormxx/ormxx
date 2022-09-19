@@ -238,8 +238,15 @@ TEST_F(ORMXXTest, update_test) {
             auto res = orm->Update(&user);
             EXPECT_TRUE(res.IsOK());
 
-            auto sql = orm->getLastSQLStatement().GetSQLString();
-            EXPECT_EQ(sql, std::string(R"(UPDATE `user` SET `name` = 'test2' WHERE `id` = 1;)"));
+            const auto& last_sql = orm->getLastSQLStatement();
+
+            auto sql = last_sql.GetSQLString();
+            auto expected_sql = std::string(R"(UPDATE `user` SET `name` = ? WHERE `id` = ?;)");
+            EXPECT_EQ(sql, expected_sql);
+
+            auto fields = last_sql.FieldsToString();
+            auto expected_fields = std::string("[test2, 1]");
+            EXPECT_EQ(fields, expected_fields);
         }
 
         {
@@ -248,8 +255,15 @@ TEST_F(ORMXXTest, update_test) {
             auto res = orm->Update(&user);
             EXPECT_TRUE(res.IsOK());
 
-            auto sql = orm->getLastSQLStatement().GetSQLString();
-            EXPECT_EQ(sql, std::string(R"(UPDATE `user` SET `name` = 'test3' WHERE `id` = 1;)"));
+            const auto& last_sql = orm->getLastSQLStatement();
+
+            auto sql = last_sql.GetSQLString();
+            auto expected_sql = std::string(R"(UPDATE `user` SET `name` = ? WHERE `id` = ?;)");
+            EXPECT_EQ(sql, expected_sql);
+
+            auto fields = last_sql.FieldsToString();
+            auto expected_fields = std::string("[test3, 1]");
+            EXPECT_EQ(fields, expected_fields);
         }
     }
 
