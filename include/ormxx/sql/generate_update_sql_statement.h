@@ -6,6 +6,7 @@
 #include "../internal/field_to_sql_statement_field_value.h"
 #include "../internal/inject_utility.h"
 #include "../types_check/has_ormxx_inject.h"
+#include "./sql_utility.h"
 
 namespace ormxx {
 
@@ -20,33 +21,11 @@ ResultOr<SQLStatement> GenerateUpdateSQLStatement(T* t) {
     const auto table_options = internal::InjectEntrance::GetTableOptions(t);
 
     SQLStatement sql_statement{};
-    auto& sql_string = sql_statement.SQLString();
 
     sql_statement.AppendSQLString(fmt::format("UPDATE `{}` SET ", table_options.table_name));
 
-    {
-        const auto options =
-                internal::StructSchemaEntranceOptionsBuilder().WithVisitField().WithVisitFieldByIsSet().Build();
-        internal::InjectEntrance::StructSchemaEntrance(t, options, [&sql_statement](auto&& field, auto&& options) {
-            sql_statement.AppendSQLString(fmt::format("`{}` = ?, ", options.field_name));
-
-            auto f = SQLStatement::Field{};
-            f.field_type = options.field_type;
-            f.value = internal::FieldToSQLStatementFieldValue(field);
-
-            sql_statement.AppendField(f);
-        });
-    }
-
-    if (sql_string.length() >= 2 && sql_string.substr(sql_string.length() - 2) == ", ") {
-        sql_string.pop_back();
-        sql_string.pop_back();
-    } else {
-        auto res = Result::Builder(Result::ErrorCode::GenerateSQLError)
-                           .WithErrorMessage(fmt::format("update field empty"))
-                           .Build();
-        RESULT_DIRECT_RETURN(res);
-    }
+    RESULT_VALUE_OR_RETURN(const auto set_sql_statement, internal::SQLUtility::GenerateUpdateSetSQLStatement(*t));
+    sql_statement.Append(set_sql_statement);
 
     sql_statement.AppendSQLString(" WHERE ");
 

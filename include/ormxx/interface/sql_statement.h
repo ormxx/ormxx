@@ -38,6 +38,14 @@ public:
         fields_.insert(fields_.end(), fields.begin(), fields.end());
     }
 
+    void Append(const SQLStatement& sql_statement) {
+        Append(sql_statement.GetSQLString(), sql_statement.GetFields());
+    }
+
+    void Append(SQLStatement&& sql_statement) {
+        Append(sql_statement.GetSQLString(), sql_statement.GetFields());
+    }
+
     void AppendSQLString(const std::string& sql) {
         sql_ += sql;
     }

@@ -92,6 +92,38 @@ public:
         return s;
     }
 
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+    static ResultOr<SQLStatement> GenerateUpdateSetSQLStatement(const T& t) {
+        SQLStatement s{};
+        auto& sql_string = s.SQLString();
+
+        {
+            const auto o =
+                    internal::StructSchemaEntranceOptionsBuilder().WithVisitField().WithVisitFieldByIsSet().Build();
+            internal::InjectEntrance::StructSchemaEntrance(&t, o, [&s](auto&& field, auto&& options) {
+                s.AppendSQLString(fmt::format("`{}` = ?, ", options.field_name));
+
+                auto f = SQLStatement::Field{};
+                f.field_type = options.field_type;
+                f.value = internal::FieldToSQLStatementFieldValue(field);
+
+                s.AppendField(f);
+            });
+        }
+
+        if (sql_string.length() >= 2 && sql_string.substr(sql_string.length() - 2) == ", ") {
+            sql_string.pop_back();
+            sql_string.pop_back();
+        } else {
+            auto res = Result::Builder(Result::ErrorCode::GenerateSQLError)
+                               .WithErrorMessage(fmt::format("update field is empty"))
+                               .Build();
+            RESULT_DIRECT_RETURN(res);
+        }
+
+        return s;
+    }
+
 private:
     template <typename T>
     static const SQLStatement& getSQLStatementFromQueryFieldsBuilder(const FieldBuilder<T>& c) {
