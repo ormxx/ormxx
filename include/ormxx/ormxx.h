@@ -315,18 +315,18 @@ public:
     }
 
 public:
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     Result CheckSchema() {
         RESULT_DIRECT_RETURN(GenerateCreateTableSQL<T>());
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> DropTable() {
         RESULT_VALUE_OR_RETURN(const auto sql, GenerateDropTableSQL<T>());
         RESULT_DIRECT_RETURN(Execute(sql));
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> CreateTable() {
         RESULT_VALUE_OR_RETURN(const auto sql, GenerateCreateTableSQL<T>());
         RESULT_DIRECT_RETURN(Execute(sql));
@@ -367,18 +367,18 @@ public:
         RESULT_DIRECT_RETURN(Insert(&t));
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Delete(T* t) {
         RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateDeleteSQLStatement<T>(t));
         RESULT_DIRECT_RETURN(ExecuteUpdate(sql_statement));
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Delete(T t) {
         RESULT_DIRECT_RETURN(Delete(&t));
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Update(T* t) {
         RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateUpdateSQLStatement<T>(t));
         RESULT_VALUE_OR_RETURN(auto execute_res, ExecuteUpdate(sql_statement));
@@ -390,17 +390,17 @@ public:
         return execute_res;
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<std::unique_ptr<ExecuteResult>> Update(T t) {
         RESULT_DIRECT_RETURN(Update(&t));
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     ResultOr<T> First() {
         RESULT_DIRECT_RETURN(NewQueryBuilder<T>().First());
     }
 
-    template <typename T>
+    template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
     Result First(T* t) {
         RESULT_VALUE_OR_RETURN(*t, First<T>());
         return Result::OK();
