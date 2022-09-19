@@ -8,7 +8,6 @@
 #include "../interface/result.h"
 #include "../options/field_type.h"
 #include "../types_check/common.h"
-#include "result/macros.h"
 
 namespace ormxx::internal {
 

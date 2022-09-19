@@ -14,7 +14,6 @@
 #include "../../interface/execute_result.h"
 
 #include "./mysql_result.h"
-#include "result/macros.h"
 
 namespace ormxx::adaptor::mysql {
 
