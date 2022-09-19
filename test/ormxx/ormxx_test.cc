@@ -115,6 +115,10 @@ TEST_F(ORMXXTest, insert_test) {
         const auto expected_sql = std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES (?, ?);)");
         EXPECT_EQ(sql, expected_sql);
 
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[test, 1]");
+        EXPECT_EQ(fields, expected_fields);
+
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
     }
@@ -131,6 +135,10 @@ TEST_F(ORMXXTest, insert_test) {
         const auto expected_sql = std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES (?, ?);)");
         EXPECT_EQ(sql, expected_sql);
 
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[test, 2]");
+        EXPECT_EQ(fields, expected_fields);
+
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
     }
@@ -144,6 +152,10 @@ TEST_F(ORMXXTest, insert_test) {
         const auto& sql = last_sql.GetSQLString();
         const auto expected_sql = std::string(R"(INSERT INTO `user` (`name`, `age`) VALUES (?, ?);)");
         EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[name1, 3]");
+        EXPECT_EQ(fields, expected_fields);
 
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
@@ -172,6 +184,11 @@ TEST_F(ORMXXTest, insert_test) {
 )");
         EXPECT_EQ(sql, expected_sql);
 
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields =
+                std::string("[name4, 4, name5, 5, name6, 6, name7, 7, name8, 8, name9, 9, name10, 10]");
+        EXPECT_EQ(fields, expected_fields);
+
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 7);
     }
@@ -187,6 +204,10 @@ TEST_F(ORMXXTest, insert_test) {
         const auto& sql = last_sql.GetSQLString();
         const auto expected_sql = std::string(R"(INSERT INTO `user` (`id`, `name`, `age`) VALUES (?, ?, ?);)");
         EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[999, dd, 10]");
+        EXPECT_EQ(fields, expected_fields);
 
         auto execute_res = std::move(res.Value());
         EXPECT_EQ(execute_res->RowsAffected(), 1);
@@ -284,8 +305,8 @@ TEST_F(ORMXXTest, update_test) {
             const auto expected_sql = std::string(R"(UPDATE `user` SET `name` = ? WHERE `id` = ?;)");
             EXPECT_EQ(sql, expected_sql);
 
-            auto fields = last_sql.FieldsToString();
-            auto expected_fields = std::string("[test3, 1]");
+            const auto fields = last_sql.FieldsToString();
+            const auto expected_fields = std::string("[test3, 1]");
             EXPECT_EQ(fields, expected_fields);
         }
     }
@@ -326,6 +347,10 @@ TEST_F(ORMXXTest, first_test) {
                 "SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` LIMIT 1;");
         EXPECT_EQ(sql, expected_sql);
 
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[]");
+        EXPECT_EQ(fields, expected_fields);
+
         auto user = std::move(res.Value());
 
         EXPECT_EQ(user.GetID(), 1);
@@ -354,6 +379,10 @@ TEST_F(ORMXXTest, first_test) {
                 R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = ?) LIMIT 1;)");
         EXPECT_EQ(sql, expected_sql);
 
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[1]");
+        EXPECT_EQ(fields, expected_fields);
+
         auto user = res.Value();
         EXPECT_EQ(user.GetID(), 1);
         EXPECT_EQ(user.GetName(), "test");
@@ -370,6 +399,10 @@ TEST_F(ORMXXTest, first_test) {
         const auto expected_sql = std::string(
                 R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`id` = ? AND `name` = ?) LIMIT 1;)");
         EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[1, test]");
+        EXPECT_EQ(fields, expected_fields);
 
         auto user = res.Value();
         EXPECT_EQ(user.GetID(), 1);
@@ -414,6 +447,10 @@ TEST_F(ORMXXTest, find_test) {
         const auto expected_sql = std::string(
                 R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE (`name` = ?);)");
         EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[test]");
+        EXPECT_EQ(fields, expected_fields);
 
         auto s_vec = std::move(res.Value());
         EXPECT_EQ(s_vec.size(), 10);
@@ -495,6 +532,10 @@ TEST_F(ORMXXTest, QueryFieldsBuilder) {
         const auto expected_sql = std::string(
                 R"(SELECT `user`.`id`, `user`.`name`, `user`.`age`, `user`.`update_timestamp`, `user`.`insert_timestamp` FROM `user` WHERE ((`age` BETWEEN ? AND ?) AND (`name` = ?));)");
         EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[5, 6, test]");
+        EXPECT_EQ(fields, expected_fields);
 
         auto s_vec = std::move(res.Value());
         EXPECT_EQ(s_vec.size(), 2);
