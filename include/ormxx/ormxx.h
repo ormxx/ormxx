@@ -210,7 +210,7 @@ public:
         }
 
         template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
-        Result Update(T t) {
+        ResultOr<std::unique_ptr<ExecuteResult>> Update(T t) {
             return Update(&t);
         }
 
