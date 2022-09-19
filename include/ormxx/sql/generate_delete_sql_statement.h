@@ -11,6 +11,7 @@
 #include "../internal/inject_entrance.h"
 #include "../internal/inject_utility.h"
 #include "../types_check/has_ormxx_inject.h"
+#include "./sql_expr.h"
 
 namespace ormxx {
 
@@ -43,6 +44,26 @@ ResultOr<SQLStatement> GenerateDeleteSQLStatement(T* t) {
     sql_statement.AppendSQLString(";");
 
     return sql_statement;
+}
+
+template <typename T, std::enable_if_t<internal::has_ormxx_inject_v<T>, bool> = true>
+ResultOr<SQLStatement> GenerateDeleteSQLStatement(const internal::SQLExpr& sql_expr) {
+    T t{};
+
+    const auto table_options = internal::InjectEntrance::GetTableOptions(&t);
+
+    SQLStatement s{};
+
+    s.AppendSQLString(fmt::format("DELETE FROM `{}`", table_options.table_name));
+
+    if (!sql_expr.sql_where.Empty()) {
+        s.AppendSQLString(fmt::format(" WHERE {}", sql_expr.sql_where.GetSQLString()));
+        s.AppendFields(sql_expr.sql_where.GetFields());
+    }
+
+    s.AppendSQLString(";");
+
+    return s;
 }
 
 }  // namespace ormxx

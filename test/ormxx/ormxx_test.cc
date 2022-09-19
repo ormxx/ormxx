@@ -630,7 +630,7 @@ TEST_F(ORMXXTest, QueryFieldsBuilder_Select_1) {
     }
 }
 
-TEST_F(ORMXXTest, QueryFieldsBuilder_Update_1) {
+TEST_F(ORMXXTest, QueryFieldsBuilder_Update) {
     auto* orm = GetORMXX();
 
     {
@@ -677,6 +677,57 @@ TEST_F(ORMXXTest, QueryFieldsBuilder_Update_1) {
             auto res = q.Where(u.Age.Eq(999)).Find();
             auto s_vec = std::move(res.Value());
             EXPECT_EQ(s_vec.size(), 5);
+        }
+    }
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+}
+
+TEST_F(ORMXXTest, QueryFieldsBuilder_Delete) {
+    auto* orm = GetORMXX();
+
+    {
+        auto res = orm->DropTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        auto res = orm->CreateTable<model::User>();
+        EXPECT_TRUE(res.IsOK());
+    }
+
+    {
+        for (int i = 1; i <= 20; i++) {
+            auto user = model::User().SetID(i).SetName("test").SetAge(i).SetInsertTimestamp(
+                    fmt::format("2022-09-{} 11:00:00", i));
+            auto insert_res = orm->Insert(&user);
+            EXPECT_TRUE(insert_res.IsOK());
+        }
+    }
+
+    {
+        auto q = orm->NewQueryBuilder<model::User>();
+
+        auto res = q.Delete();
+        EXPECT_TRUE(res.IsOK());
+
+        const auto& last_sql = orm->getLastSQLStatement();
+
+        const auto& sql = last_sql.GetSQLString();
+        const auto expected_sql = std::string("DELETE FROM `user`;");
+        EXPECT_EQ(sql, expected_sql);
+
+        const auto fields = last_sql.FieldsToString();
+        const auto expected_fields = std::string("[]");
+        EXPECT_EQ(fields, expected_fields);
+
+        {
+            auto res = q.Find();
+            auto s_vec = std::move(res.Value());
+            EXPECT_EQ(s_vec.size(), 0);
         }
     }
 

@@ -214,6 +214,11 @@ public:
             return Update(&t);
         }
 
+        ResultOr<std::unique_ptr<ExecuteResult>> Delete() {
+            RESULT_VALUE_OR_RETURN(const auto sql_statement, GenerateDeleteSQLStatement<Struct>(sql_expr_));
+            RESULT_DIRECT_RETURN(ormxx_.ExecuteUpdate(sql_statement));
+        }
+
     private:
         internal::SQLExpr sql_expr_{};
         ORMXX& ormxx_;
