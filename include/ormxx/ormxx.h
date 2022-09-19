@@ -174,7 +174,7 @@ public:
 
         template <std::enable_if_t<!std::is_void_v<Struct>, bool> = true>
         ResultOr<Struct> First() {
-            Struct s;
+            Struct s{};
 
             auto _sql_data = sql_expr_;
             _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
@@ -190,7 +190,7 @@ public:
 
         template <std::enable_if_t<!std::is_void_v<Struct>, bool> = true>
         ResultOr<std::vector<Struct>> Find() {
-            Struct s;
+            Struct s{};
 
             auto _sql_data = sql_expr_;
             _sql_data.sql_select = internal::SQLUtility::GenerateAllFieldNameSelectSQLString(&s);
