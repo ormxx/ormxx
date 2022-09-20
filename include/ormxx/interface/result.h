@@ -15,6 +15,7 @@ enum class ErrorCode {
     NoInvalidPrimaryKeyError,
     GetColumnValueError,
     UnSupportTypeError,
+    ConnectionConfigNotFoundError,
     ExecuteError,
     OtherError,
 };
@@ -29,6 +30,7 @@ inline auto ErrorCodeToStr(ErrorCode error_code) {
             {ErrorCode::NoInvalidPrimaryKeyError, "NoInvalidPrimaryKeyError"},
             {ErrorCode::GetColumnValueError, "GetColumnValueError"},
             {ErrorCode::UnSupportTypeError, "UnSupportTypeError"},
+            {ErrorCode::ConnectionConfigNotFoundError, "ConnectionConfigNotFoundError"},
             {ErrorCode::ExecuteError, "ExecuteError"},
             {ErrorCode::OtherError, "OtherError"},
     };

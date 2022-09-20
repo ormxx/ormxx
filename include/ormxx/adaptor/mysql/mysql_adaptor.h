@@ -75,8 +75,9 @@ public:
         }
 
         try {
-            auto config = getConfig(type).GetConnectOptionsMap();
-            auto* conn = driver_->connect(config);
+            RESULT_VALUE_OR_RETURN(auto config, getConfig(type));
+            auto connection_options_map = config.GetConnectOptionsMap();
+            auto* conn = driver_->connect(connection_options_map);
             return dynamic_cast<Connection*>(new MySQLConnection(conn));
         } catch (std::exception& e) {
             auto res = Result::Builder(Result::ErrorCode::ConnectionError)
@@ -88,11 +89,16 @@ public:
 
 private:
     // maybe core dump
-    MySQLConfig getConfig(ConnectionType connection_type = ConnectionType::WRITE) const {
+    ResultOr<MySQLConfig> getConfig(ConnectionType connection_type = ConnectionType::WRITE) const {
         if (connection_type == ConnectionType::READ) {
             if (config_map_.count(ConnectionType::READ) != 0 && !config_map_.at(ConnectionType::READ).empty()) {
                 return config_map_.at(ConnectionType::READ).front();
             }
+        }
+
+        if (config_map_.count(ConnectionType::WRITE) == 0 || config_map_.at(ConnectionType::WRITE).empty()) {
+            auto res = Result::Builder(Result::ErrorCode::ConnectionConfigNotFoundError).Build();
+            RESULT_DIRECT_RETURN(res);
         }
 
         return config_map_.at(ConnectionType::WRITE).front();
