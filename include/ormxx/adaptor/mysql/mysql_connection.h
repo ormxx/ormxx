@@ -120,11 +120,12 @@ public:
             res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(execute_success)));
             return res;
         } catch (std::exception& e) {
-            auto res =
-                    Result::Builder(Result::ErrorCode::ExecuteError)
-                            .WithErrorMessage(fmt::format(
-                                    "MySQL Execute failed. [err={}] [sql={}]", e.what(), sql_statement.GetSQLString()))
-                            .Build();
+            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
+                               .WithErrorMessage(fmt::format("MySQL Execute failed. [err={}] [sql={}] [fields={}]",
+                                                             e.what(),
+                                                             sql_statement.GetSQLString(),
+                                                             sql_statement.FieldsToString()))
+                               .Build();
             RESULT_DIRECT_RETURN(res);
         }
     }
@@ -160,9 +161,10 @@ public:
             return res;
         } catch (std::exception& e) {
             auto res = Result::Builder(Result::ErrorCode::ExecuteError)
-                               .WithErrorMessage(fmt::format("MySQL ExecuteQuery failed. [err={}] [sql={}]",
+                               .WithErrorMessage(fmt::format("MySQL ExecuteQuery failed. [err={}] [sql={}] [fields={}]",
                                                              e.what(),
-                                                             sql_statement.GetSQLString()))
+                                                             sql_statement.GetSQLString(),
+                                                             sql_statement.FieldsToString()))
                                .Build();
             RESULT_DIRECT_RETURN(res);
         }
@@ -198,11 +200,13 @@ public:
             res.reset(dynamic_cast<ExecuteResult*>(new MySQLResult(rows_affected)));
             return res;
         } catch (std::exception& e) {
-            auto res = Result::Builder(Result::ErrorCode::ExecuteError)
-                               .WithErrorMessage(fmt::format("MySQL ExecuteUpdate failed. [err={}] [sql={}]",
-                                                             e.what(),
-                                                             sql_statement.GetSQLString()))
-                               .Build();
+            auto res =
+                    Result::Builder(Result::ErrorCode::ExecuteError)
+                            .WithErrorMessage(fmt::format("MySQL ExecuteUpdate failed. [err={}] [sql={}] [fields={}]",
+                                                          e.what(),
+                                                          sql_statement.GetSQLString(),
+                                                          sql_statement.FieldsToString()))
+                            .Build();
             RESULT_DIRECT_RETURN(res);
         }
     }
