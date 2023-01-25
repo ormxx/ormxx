@@ -20,7 +20,7 @@ git_repository(
     name = "gtest",
     build_file = "@bazel_build_files//gtest:BUILD.bazel",
     remote = "https://github.com/google/googletest.git",
-    tag = "v1.12.0",
+    tag = "v1.13.0",
 )
 
 git_repository(
