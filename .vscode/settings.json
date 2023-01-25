@@ -24,10 +24,12 @@
         }
     },
     "cSpell.words": [
+        "bazel",
         "cmake",
         "codecov",
         "declval",
         "GCOVR",
+        "lcov",
         "LONGBLOB",
         "LONGTEXT",
         "MEDIUMBLOB",

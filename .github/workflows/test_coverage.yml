@@ -1,0 +1,62 @@
+# yaml-language-server: $schema=https://json-schema.org/draft-07/schema#
+name: Test Coverage
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-coverage:
+    runs-on: ubuntu-latest
+    env:
+      GCC_VERSION: 12
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: mysqlclient_unittest
+          MYSQL_ROOT_PASSWORD: password
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout codebase
+        uses: actions/checkout@v3
+
+      - name: Setup bazel
+        uses: jwlawson/actions-setup-bazel@v1
+        with:
+          bazel-version: "latest"
+
+      - name: Setup GCC
+        uses: Dup4/actions-setup-gcc@v1
+        with:
+          version: ${{ env.GCC_VERSION }}
+
+      - name: Install lcov
+        run: |
+          sudo apt install lcov
+          bash ./install_deps.sh
+
+      - name: Coverage
+        run: |
+          source ./unittest.example.env
+          make bazel_coverage
+          make bazel_coverage_genhtml
+          cp ./bazel-testlogs/unittest/coverage.dat coverage.dat
+
+      - name: upload coverage artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: |
+            bazel-coverage-html
+            coverage.dat
+
+      - name: Upload coverage to CodeCov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.dat
+          verbose: true
