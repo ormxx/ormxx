@@ -10,11 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GCC_VERSION: 12
-      MYSQL_HOSTNAME: 127.0.0.1
-      MYSQL_PORT: 3306
-      MYSQL_USERNAME: root
-      MYSQL_PASSWORD: password
-      MYSQL_SCHEMA: mysqlclient_unittest
 
     services:
       mysql:
