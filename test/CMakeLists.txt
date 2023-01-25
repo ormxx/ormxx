@@ -68,7 +68,9 @@ DISCOVERY_TIMEOUT  # how long to wait (in seconds) before crashing
     240
 )
 
-file(GLOB BENCHMARK_FILE "*_benchmark.cc")
+file(GLOB BENCHMARK_FILE
+    "ormxx/*_benchmark.cc"
+)
 add_executable(
     unit_benchmark
     ${BENCHMARK_FILE}
