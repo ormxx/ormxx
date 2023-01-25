@@ -2,7 +2,7 @@
 
 # ormxx
 
-[![Clang Format](https://github.com/Dup4/ormxx/workflows/Clang%20Format/badge.svg)](https://github.com/Dup4/ormxx/actions/workflows/clang_format.yml)
-[![Test](https://github.com/Dup4/ormxx/workflows/Test/badge.svg)](https://github.com/Dup4/ormxx/actions/workflows/test.yml)
-[![codecov](https://codecov.io/gh/Dup4/ormxx/branch/main/graph/badge.svg)](https://codecov.io/gh/Dup4/ormxx)
-[![GitHub release](https://img.shields.io/github/release/Dup4/ormxx.svg)](https://GitHub.com/Dup4/ormxx/releases/)
+[![Clang Format](https://github.com/ormxx/ormxx/workflows/Clang%20Format/badge.svg)](https://github.com/ormxx/ormxx/actions/workflows/clang_format.yml)
+[![Test](https://github.com/ormxx/ormxx/workflows/Test/badge.svg)](https://github.com/ormxx/ormxx/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/ormxx/ormxx/branch/main/graph/badge.svg)](https://codecov.io/gh/ormxx/ormxx)
+[![GitHub release](https://img.shields.io/github/release/ormxx/ormxx.svg)](https://GitHub.com/ormxx/ormxx/releases/)
