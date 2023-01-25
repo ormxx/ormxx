@@ -37,9 +37,9 @@ git_repository(
 )
 
 git_repository(
-    name = "result",
+    name = "result-cpp",
     remote = "https://github.com/Dup4/result-cpp.git",
-    tag = "v0.0.18",
+    tag = "v0.0.19",
 )
 
 git_repository(
