@@ -1,0 +1,74 @@
+package(default_visibility = ["//visibility:public"])
+
+common_copts = [
+    "-std=c++17",
+    "-O3",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+]
+
+cc_library(
+    name = "ormxx",
+    hdrs = glob([
+        "include/ormxx/*.h",
+        "include/ormxx/**/*.h",
+        "include/ormxx/**/**/*.h",
+    ]),
+    copts = common_copts,
+    includes = [
+        "include",
+    ],
+    deps = [
+        "@fmt",
+        "@result-cpp",
+    ],
+)
+
+common_test_copts = common_copts + [
+    "-fno-access-control",
+]
+
+common_test_defines = [
+    "ORMXX_BUILD_TESTS",
+]
+
+common_test_linkopts = [
+    "-lmysqlcppconn",
+]
+
+cc_test(
+    name = "unittest",
+    srcs = glob([
+        "test/ormxx/*.h",
+        "test/ormxx/*_test.cc",
+        "test/ormxx/**/*.h",
+        "test/ormxx/**/*_test.cc",
+    ]),
+    copts = common_test_copts,
+    defines = common_test_defines,
+    linkopts = common_test_linkopts,
+    deps = [
+        ":ormxx",
+        "@gtest//:gtest_main",
+        "@snapshot",
+    ],
+)
+
+cc_binary(
+    name = "benchmark",
+    srcs = glob([
+        "test/ormxx/*.h",
+        "test/ormxx/*_benchmark.cc",
+        "test/ormxx/**/*.h",
+        "test/ormxx/**/*_benchmark.cc",
+    ]),
+    copts = common_test_copts,
+    defines = common_test_defines,
+    linkopts = common_test_linkopts,
+    deps = [
+        ":ormxx",
+        "@google_benchmark//:benchmark_main",
+    ],
+)

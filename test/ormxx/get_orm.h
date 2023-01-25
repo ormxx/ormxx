@@ -11,16 +11,31 @@ namespace ormxx::test {
 
 inline ORMXX* GetORMXX() {
     static ORMXX* orm = std::invoke([]() {
-        auto* hostname = std::getenv("MYSQL_HOSTNAME");
-        auto* port = std::getenv("MYSQL_PORT");
-        auto* username = std::getenv("MYSQL_USERNAME");
-        auto* password = std::getenv("MYSQL_PASSWORD");
-        auto* schema = std::getenv("MYSQL_SCHEMA");
+        const char* hostname = std::getenv("MYSQL_HOSTNAME");
+        const char* port = std::getenv("MYSQL_PORT");
+        const char* username = std::getenv("MYSQL_USERNAME");
+        const char* password = std::getenv("MYSQL_PASSWORD");
+        const char* schema = std::getenv("MYSQL_SCHEMA");
 
-        assert(hostname != nullptr);
-        assert(username != nullptr);
-        assert(password != nullptr);
-        assert(schema != nullptr);
+        if (hostname == nullptr) {
+            hostname = "127.0.0.1";
+        }
+
+        if (port == nullptr) {
+            port = "3306";
+        }
+
+        if (username == nullptr) {
+            username = "root";
+        }
+
+        if (password == nullptr) {
+            password = "password";
+        }
+
+        if (schema == nullptr) {
+            schema = "mysqlclient_unittest";
+        }
 
         auto config = adaptor::mysql::MySQLConfig::Builder()
                               .WithHostname(hostname)

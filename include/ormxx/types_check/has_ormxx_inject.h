@@ -7,7 +7,7 @@
 namespace ormxx::internal {
 
 template <typename T>
-inline constexpr bool has_ormxx_inject_v = has_ormxx_struct_schema_entrance_v<T>&& has_ormxx_get_table_options_v<T>;
+inline constexpr bool has_ormxx_inject_v = has_ormxx_struct_schema_entrance_v<T> && has_ormxx_get_table_options_v<T>;
 
 }  // namespace ormxx::internal
 

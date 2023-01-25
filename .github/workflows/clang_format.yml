@@ -2,11 +2,7 @@
 name: Clang Format
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   clang-format:
@@ -14,11 +10,11 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - uses: DoozyX/clang-format-lint-action@v0.14
+      - uses: DoozyX/clang-format-lint-action@v0.15
         with:
           source: "."
           exclude: "./build"
           extensions: "h,hpp,c,cc,cpp"
-          clangFormatVersion: 14
+          clangFormatVersion: 15

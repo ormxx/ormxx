@@ -3,11 +3,7 @@ name: Test
 
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   test:
@@ -15,11 +11,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os:
+          - ubuntu-latest
+        tool:
+          - cmake
+          - bazel
+        compiler:
+          - gcc
+          - clang
+        compiler_version:
+          - 12
+          - 15
+        db_image:
+          - mysql:5.7
+          - mysql:8.0
+          - mariadb:10.10
+        exclude:
+          - compiler: gcc
+            compiler_version: 15
+          - compiler: clang
+            compiler_version: 12
 
     services:
       mysql:
-        image: mysql:5.7
+        image: ${{ matrix.db_image }}
         env:
           MYSQL_DATABASE: mysqlclient_unittest
           MYSQL_ROOT_PASSWORD: password
@@ -29,89 +44,51 @@ jobs:
 
     steps:
       - name: Checkout codebase
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Setup bazel
+        if: matrix.tool == 'bazel'
+        uses: jwlawson/actions-setup-bazel@v1
+        with:
+          bazel-version: "latest"
 
       - name: Setup cmake
+        if: matrix.tool == 'cmake'
         uses: jwlawson/actions-setup-cmake@v1
         with:
           cmake-version: "latest"
 
-      - name: Install LLVM and Clang
+      - name: Setup Clang
+        if: matrix.compiler == 'clang'
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "14.0"
+          version: ${{ matrix.compiler_version }}
 
-      - name: Build
+      - name: Set Clang Compiler Env
+        if: matrix.compiler == 'clang'
         run: |
-          ./install_deps.sh
-          export CC=clang
-          export CXX=clang++
+          echo "CC=${LLVM_PATH}/bin/clang" >> $GITHUB_ENV
+          echo "CXX=${LLVM_PATH}/bin/clang++" >> $GITHUB_ENV
+
+      - name: Setup GCC
+        uses: Dup4/actions-setup-gcc@v1
+        if: matrix.compiler == 'gcc'
+        with:
+          version: ${{ matrix.compiler_version }}
+
+      - name: Install deps
+        run: |
+          bash ./install_deps.sh
+
+      - name: Build And Test Use Cmake
+        if: matrix.tool == 'cmake'
+        run: |
           make tests
-
-      - name: Unit Test
-        run: |
-          source ./unittest.example.env
           make unittest
-
-      - name: GCOVR Analysis
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          pip install gcovr==5.1
-          bash -e gcovr.sh
-
-      - name: upload coverage artifact
-        if: contains(matrix.os, 'ubuntu')
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage
-          path: .coverage
-
-      - name: Upload coverage to CodeCov
-        if: contains(matrix.os, 'ubuntu')
-        uses: codecov/codecov-action@v2
-        with:
-          files: .coverage/coverage.xml
-          verbose: true
-
-  benchmark:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_DATABASE: mysqlclient_unittest
-          MYSQL_ROOT_PASSWORD: password
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
-    steps:
-      - name: Checkout codebase
-        uses: actions/checkout@v2
-
-      - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v1
-        with:
-          cmake-version: "latest"
-
-      - name: Install LLVM and Clang
-        uses: KyleMayes/install-llvm-action@v1
-        with:
-          version: "14.0"
-
-      - name: Build
-        run: |
-          ./install_deps.sh
-          export CC=clang
-          export CXX=clang++
-          make tests
-
-      - name: Benchmark
-        run: |
-          source ./unittest.example.env
           make benchmark
+
+      - name: Build And Test Use Bazel
+        if: matrix.tool == 'bazel'
+        run: |
+          make bazel_ut
+          make bazel_bench

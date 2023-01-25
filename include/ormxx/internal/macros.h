@@ -31,9 +31,7 @@ public:                                                                 \
         return *this;                                                   \
     }                                                                   \
                                                                         \
-    const decltype(__ORMXX_Struct::Field)& Get##Field() const {         \
-        return this->Field;                                             \
-    }
+    const decltype(__ORMXX_Struct::Field)& Get##Field() const { return this->Field; }
 
 #define __ORMXX_STRUCT_SCHEMA_DECLARE_FIELD_BUILDER(Field)                                                   \
     ::ormxx::internal::FieldBuilder<decltype(BaseStruct::Field)> Field{                                      \
@@ -54,13 +52,9 @@ private:                                                                        
                                                                                                 \
     std::unordered_map<std::string, bool> is_set_map;                                           \
                                                                                                 \
-    auto& __ORMXX_GetIsSetMap() {                                                               \
-        return is_set_map;                                                                      \
-    }                                                                                           \
+    auto& __ORMXX_GetIsSetMap() { return is_set_map; }                                          \
                                                                                                 \
-    const auto& __ORMXX_GetIsSetMap() const {                                                   \
-        return is_set_map;                                                                      \
-    }                                                                                           \
+    const auto& __ORMXX_GetIsSetMap() const { return is_set_map; }                              \
                                                                                                 \
     __ORMXX_EXPEND_FUNC_(__ORMXX_STRUCT_SCHEMA_DECLARE_SET_AND_GET_FUNCTION, __VA_ARGS__)       \
                                                                                                 \

@@ -256,7 +256,7 @@ public:
     virtual ~ORMXX() {
         for (auto& [k, v] : connection_pool_node_map_) {
             while (!v.pool.empty()) {
-                auto& connection = v.pool.front();
+                auto* connection = v.pool.front();
                 v.pool.pop_front();
 
                 connection->Close();
