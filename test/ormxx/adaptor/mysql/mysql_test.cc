@@ -27,7 +27,7 @@ TEST_F(MySQLClientTest, mysqlclient_test) {
 
     {
         auto res = orm->Execute(fmt::format("DROP TABLE IF EXISTS `{}`;", kTableName));
-        EXPECT_TRUE(res.IsOK());
+        ASSERT_TRUE(res.IsOK());
         auto execute_res = std::move(res.Value());
     }
 
