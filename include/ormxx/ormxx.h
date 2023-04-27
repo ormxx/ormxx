@@ -450,6 +450,11 @@ public:
 
 private:
     ResultOr<Connection*> getConnection(ConnectionType connection_type = ConnectionType::WRITE) {
+        if (adaptor_ == nullptr) {
+            auto res = Result::Builder(Result::ErrorCode::NotInitializedError).Build();
+            RESULT_DIRECT_RETURN(res);
+        }
+
         auto& node = connection_pool_node_map_[connection_type];
         std::unique_lock<std::mutex> lock(node.mutex_);
 
